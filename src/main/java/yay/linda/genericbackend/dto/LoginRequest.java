@@ -1,4 +1,4 @@
-package yay.linda.genericbackend.domain;
+package yay.linda.genericbackend.dto;
 
 public class LoginRequest {
 

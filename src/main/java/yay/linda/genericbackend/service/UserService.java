@@ -1,19 +1,19 @@
 package yay.linda.genericbackend.service;
 
 import org.springframework.stereotype.Service;
-import yay.linda.genericbackend.domain.LoginRequest;
-import yay.linda.genericbackend.domain.LoginResponse;
-import yay.linda.genericbackend.domain.RegisterRequest;
-import yay.linda.genericbackend.domain.RegisterResponse;
+import yay.linda.genericbackend.dto.LoginRequest;
+import yay.linda.genericbackend.dto.LoginResponse;
+import yay.linda.genericbackend.dto.RegisterRequest;
+import yay.linda.genericbackend.dto.RegisterResponse;
 
 import java.util.UUID;
 
-import static yay.linda.genericbackend.domain.LoginResponseStatus.SUCCESS;
-import static yay.linda.genericbackend.domain.LoginResponseStatus.USERNAME_NOT_FOUND;
-import static yay.linda.genericbackend.domain.LoginResponseStatus.WRONG_PASSWORD;
-import static yay.linda.genericbackend.domain.RegisterResponseStatus.CREATED;
-import static yay.linda.genericbackend.domain.RegisterResponseStatus.EMAIL_TAKEN;
-import static yay.linda.genericbackend.domain.RegisterResponseStatus.USERNAME_TAKEN;
+import static yay.linda.genericbackend.dto.LoginResponseStatus.SUCCESS;
+import static yay.linda.genericbackend.dto.LoginResponseStatus.USERNAME_NOT_FOUND;
+import static yay.linda.genericbackend.dto.LoginResponseStatus.WRONG_PASSWORD;
+import static yay.linda.genericbackend.dto.RegisterResponseStatus.CREATED;
+import static yay.linda.genericbackend.dto.RegisterResponseStatus.EMAIL_TAKEN;
+import static yay.linda.genericbackend.dto.RegisterResponseStatus.USERNAME_TAKEN;
 
 @Service
 public class UserService {
