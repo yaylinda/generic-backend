@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: generic-backend
+  profiles:
+    active: "local"
+
+server:
+  context-path: /generic-backend/api
+  port: 8080
+
+info:
+  app:
+    name: Generic Backend Application
+    description:
+    version: 1.0.0
+
+application:
+
+---
+
+spring:
+  profiles: local
+
+application:
+  mongo:
+    host: localhost
+    port: 27017
+    databaseName: genericBackendDb
+
+---
+
+spring:
+  profiles: dev
+
+---
+
+spring:
+  profiles: qa
+
+---
+
+spring:
+  profiles: prod
+

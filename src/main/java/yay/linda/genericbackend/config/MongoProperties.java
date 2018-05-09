@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "mongo")
+@ConfigurationProperties(prefix = "application.mongo")
 public class MongoProperties {
 
     private String host;
