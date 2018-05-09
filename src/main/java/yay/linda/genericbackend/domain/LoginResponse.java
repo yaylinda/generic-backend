@@ -4,14 +4,16 @@ public class LoginResponse {
 
     private LoginResponseStatus status;
     private String message;
+    private String sessionToken;
     private LoginRequest loginRequest;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(LoginResponseStatus status, String message, LoginRequest loginRequest) {
+    public LoginResponse(LoginResponseStatus status, String message, String sessionToken, LoginRequest loginRequest) {
         this.status = status;
         this.message = message;
+        this.sessionToken = sessionToken;
         this.loginRequest = loginRequest;
     }
 
@@ -33,11 +35,21 @@ public class LoginResponse {
         return this;
     }
 
+    public String getSessionToken() {
+        return sessionToken;
+    }
+
+    public LoginResponse setSessionToken(String sessionToken) {
+        this.sessionToken = sessionToken;
+        return this;
+    }
+
     public LoginRequest getLoginRequest() {
         return loginRequest;
     }
 
     public LoginResponse setLoginRequest(LoginRequest loginRequest) {
+        loginRequest.setPassword("**********");
         this.loginRequest = loginRequest;
         return this;
     }

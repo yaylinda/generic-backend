@@ -4,16 +4,14 @@ public class RegisterRequest {
 
     private String username;
     private String password;
-    private String passwordConf;
     private String email;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String password, String passwordConf, String email) {
+    public RegisterRequest(String username, String password, String email) {
         this.username = username;
         this.password = password;
-        this.passwordConf = passwordConf;
         this.email = email;
     }
 
@@ -32,15 +30,6 @@ public class RegisterRequest {
 
     public RegisterRequest setPassword(String password) {
         this.password = password;
-        return this;
-    }
-
-    public String getPasswordConf() {
-        return passwordConf;
-    }
-
-    public RegisterRequest setPasswordConf(String passwordConf) {
-        this.passwordConf = passwordConf;
         return this;
     }
 

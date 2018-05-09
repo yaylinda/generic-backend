@@ -38,6 +38,7 @@ public class RegisterResponse {
     }
 
     public RegisterResponse setRegisterRequest(RegisterRequest registerRequest) {
+        registerRequest.setPassword("**********");
         this.registerRequest = registerRequest;
         return this;
     }
