@@ -14,6 +14,7 @@ public class User {
     private String email;
     private String sessionToken;
     private Date createdDate;
+    private Date lastLogin;
 
     public User() {
     }
@@ -24,6 +25,7 @@ public class User {
         this.email = registerRequest.getEmail();
         this.sessionToken = null;
         this.createdDate = new Date();
+        this.lastLogin = null;
     }
 
     public String getId() {
@@ -77,6 +79,15 @@ public class User {
 
     public User setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+        return this;
+    }
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public User setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
         return this;
     }
 }

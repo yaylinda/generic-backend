@@ -34,4 +34,9 @@ public class UserController {
         }
     }
 
+    @PostMapping("/user/logout")
+    public ResponseEntity<LogoutResponse> logout(@RequestBody LogoutRequest logoutRequest) {
+        return ResponseEntity.ok(userService.logout(logoutRequest.getSessionToken()));
+    }
+
 }
