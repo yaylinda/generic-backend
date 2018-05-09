@@ -1,22 +1,29 @@
 package yay.linda.genericbackend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import yay.linda.genericbackend.domain.Session;
+import yay.linda.genericbackend.domain.User;
 import yay.linda.genericbackend.dto.LoginRequest;
 import yay.linda.genericbackend.dto.LoginResponse;
 import yay.linda.genericbackend.dto.RegisterRequest;
 import yay.linda.genericbackend.dto.RegisterResponse;
+import yay.linda.genericbackend.repository.SessionRepository;
+import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.UUID;
 
-import static yay.linda.genericbackend.dto.LoginResponseStatus.SUCCESS;
-import static yay.linda.genericbackend.dto.LoginResponseStatus.USERNAME_NOT_FOUND;
-import static yay.linda.genericbackend.dto.LoginResponseStatus.WRONG_PASSWORD;
-import static yay.linda.genericbackend.dto.RegisterResponseStatus.CREATED;
-import static yay.linda.genericbackend.dto.RegisterResponseStatus.EMAIL_TAKEN;
-import static yay.linda.genericbackend.dto.RegisterResponseStatus.USERNAME_TAKEN;
+import static yay.linda.genericbackend.dto.LoginResponseStatus.*;
+import static yay.linda.genericbackend.dto.RegisterResponseStatus.*;
 
 @Service
 public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SessionRepository sessionRepository;
 
     public RegisterResponse register(RegisterRequest registerRequest) {
 
@@ -72,23 +79,32 @@ public class UserService {
     }
 
     private boolean usernameExists(String username) {
-        return true; // TODO
+        return userRepository.findByUsername(username).isPresent();
     }
 
     private boolean emailExists(String email) {
-        return true; // TODO
+        return userRepository.findByEmail(email).isPresent();
     }
 
     private boolean verifyPassword(String username, String password) {
-        return true; // TODO
+        User user = userRepository.findByUsername(username).get();
+        return (user.getPassword().equals(password));
     }
 
-    private boolean persistUser(RegisterRequest registerRequest) {
-        return false; // TODO
+    private void persistUser(RegisterRequest registerRequest) {
+        User user = new User(registerRequest);
+        userRepository.save(user);
     }
 
-    private boolean persistSession(LoginRequest loginRequest, String sessionToken) {
-        return false; // TODO
+    private void persistSession(LoginRequest loginRequest, String sessionToken) {
+        User user = userRepository.findByUsername(loginRequest.getUsername()).get();
+        user.setSessionToken(sessionToken);
+        userRepository.save(user);
+
+        Session session = new Session()
+                .setUsername(loginRequest.getUsername())
+                .setSessionToken(sessionToken);
+        sessionRepository.save(session);
     }
 
     private void sendConfirmationEmail(RegisterRequest registerRequest) {
