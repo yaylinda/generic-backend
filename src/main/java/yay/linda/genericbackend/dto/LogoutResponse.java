@@ -41,4 +41,13 @@ public class LogoutResponse {
         this.sessionToken = sessionToken;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "LogoutResponse{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", sessionToken='" + sessionToken + '\'' +
+                '}';
+    }
 }

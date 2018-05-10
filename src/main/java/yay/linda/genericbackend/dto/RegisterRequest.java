@@ -41,4 +41,13 @@ public class RegisterRequest {
         this.email = email;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "RegisterRequest{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }

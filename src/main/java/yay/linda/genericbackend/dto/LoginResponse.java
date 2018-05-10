@@ -53,4 +53,14 @@ public class LoginResponse {
         this.loginRequest = loginRequest;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "LoginResponse{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", sessionToken='" + sessionToken + '\'' +
+                ", loginRequest=" + loginRequest +
+                '}';
+    }
 }

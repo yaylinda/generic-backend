@@ -42,4 +42,13 @@ public class RegisterResponse {
         this.registerRequest = registerRequest;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "RegisterResponse{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", registerRequest=" + registerRequest +
+                '}';
+    }
 }

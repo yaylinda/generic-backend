@@ -19,4 +19,11 @@ public class LogoutRequest {
         this.sessionToken = sessionToken;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "LogoutRequest{" +
+                "sessionToken='" + sessionToken + '\'' +
+                '}';
+    }
 }
