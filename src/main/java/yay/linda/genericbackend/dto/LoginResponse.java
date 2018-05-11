@@ -5,16 +5,16 @@ public class LoginResponse {
     private LoginResponseStatus status;
     private String message;
     private String sessionToken;
-    private LoginRequest loginRequest;
+    private String username;
 
     public LoginResponse() {
     }
 
-    public LoginResponse(LoginResponseStatus status, String message, String sessionToken, LoginRequest loginRequest) {
+    public LoginResponse(LoginResponseStatus status, String message, String sessionToken, String username) {
         this.status = status;
         this.message = message;
         this.sessionToken = sessionToken;
-        this.loginRequest = loginRequest;
+        this.username = username;
     }
 
     public LoginResponseStatus getStatus() {
@@ -44,13 +44,12 @@ public class LoginResponse {
         return this;
     }
 
-    public LoginRequest getLoginRequest() {
-        return loginRequest;
+    public String getUsername() {
+        return username;
     }
 
-    public LoginResponse setLoginRequest(LoginRequest loginRequest) {
-        loginRequest.setPassword("**********");
-        this.loginRequest = loginRequest;
+    public LoginResponse setUsername(String username) {
+        this.username = username;
         return this;
     }
 
@@ -60,7 +59,7 @@ public class LoginResponse {
                 "status=" + status +
                 ", message='" + message + '\'' +
                 ", sessionToken='" + sessionToken + '\'' +
-                ", loginRequest=" + loginRequest +
+                ", username='" + username + '\'' +
                 '}';
     }
 }

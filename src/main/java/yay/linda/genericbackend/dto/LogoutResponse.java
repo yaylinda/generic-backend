@@ -4,15 +4,15 @@ public class LogoutResponse {
 
     private LogoutResponseStatus status;
     private String message;
-    private String sessionToken;
+    private LogoutRequest logoutRequest;
 
     public LogoutResponse() {
     }
 
-    public LogoutResponse(LogoutResponseStatus status, String message, String sessionToken) {
+    public LogoutResponse(LogoutResponseStatus status, String message, LogoutRequest logoutRequest) {
         this.status = status;
         this.message = message;
-        this.sessionToken = sessionToken;
+        this.logoutRequest = logoutRequest;
     }
 
     public LogoutResponseStatus getStatus() {
@@ -33,12 +33,12 @@ public class LogoutResponse {
         return this;
     }
 
-    public String getSessionToken() {
-        return sessionToken;
+    public LogoutRequest getLogoutRequest() {
+        return logoutRequest;
     }
 
-    public LogoutResponse setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
+    public LogoutResponse setLogoutRequest(LogoutRequest logoutRequest) {
+        this.logoutRequest = logoutRequest;
         return this;
     }
 
@@ -47,7 +47,7 @@ public class LogoutResponse {
         return "LogoutResponse{" +
                 "status=" + status +
                 ", message='" + message + '\'' +
-                ", sessionToken='" + sessionToken + '\'' +
+                ", logoutRequest=" + logoutRequest +
                 '}';
     }
 }

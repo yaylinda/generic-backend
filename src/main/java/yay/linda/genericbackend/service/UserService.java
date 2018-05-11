@@ -1,7 +1,10 @@
 package yay.linda.genericbackend.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import yay.linda.genericbackend.api.UserController;
 import yay.linda.genericbackend.domain.Session;
 import yay.linda.genericbackend.domain.User;
 import yay.linda.genericbackend.dto.*;
@@ -9,6 +12,7 @@ import yay.linda.genericbackend.repository.SessionRepository;
 import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import static yay.linda.genericbackend.dto.LoginResponseStatus.*;
@@ -17,63 +21,75 @@ import static yay.linda.genericbackend.dto.RegisterResponseStatus.*;
 @Service
 public class UserService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private SessionRepository sessionRepository;
 
+    public UserDTO getUserFromToken(String sessionToken) {
+        Optional<User> optionalUser = userRepository.findBySessionToken(sessionToken);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            LOGGER.info("Found! {}", user);
+            return new UserDTO(user.getEmail(), user.getSessionToken(), user.getUsername());
+        } else {
+            LOGGER.warn("No user found matching sessionToken={}", sessionToken);
+            return null;
+        }
+    }
+
     public RegisterResponse register(RegisterRequest registerRequest) {
 
         if (usernameExists(registerRequest.getUsername())) {
             return new RegisterResponse()
                     .setStatus(USERNAME_TAKEN)
-                    .setMessage("username taken")
-                    .setRegisterRequest(registerRequest);
+                    .setMessage("username taken");
         }
 
         if (emailExists(registerRequest.getEmail())) {
             return new RegisterResponse()
                     .setStatus(EMAIL_TAKEN)
-                    .setMessage("email taken")
-                    .setRegisterRequest(registerRequest);
+                    .setMessage("email taken");
         }
 
-        sendConfirmationEmail(registerRequest);
+        String sessionToken = UUID.randomUUID().toString();
         persistUser(registerRequest);
+        persistSession(registerRequest.getUsername(), sessionToken, "username");
 
         return new RegisterResponse()
                 .setStatus(CREATED)
                 .setMessage("registration successful!")
-                .setRegisterRequest(registerRequest);
+                .setToken(sessionToken);
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
 
-        if (!usernameExists(loginRequest.getUsername())) {
+        if (!usernameExists(loginRequest.getEmail())) {
             return new LoginResponse()
-                    .setStatus(USERNAME_NOT_FOUND)
-                    .setMessage("username not found")
-                    .setSessionToken(null)
-                    .setLoginRequest(loginRequest);
+                    .setStatus(EMAIL_NOT_FOUND)
+                    .setMessage("email not found")
+                    .setSessionToken(null);
         }
 
-        if (!verifyPassword(loginRequest.getUsername(), loginRequest.getPassword())) {
+        if (!verifyPassword(loginRequest.getEmail(), loginRequest.getPassword())) {
             return new LoginResponse()
                     .setStatus(WRONG_PASSWORD)
                     .setMessage("wrong password")
-                    .setSessionToken(null)
-                    .setLoginRequest(loginRequest);
+                    .setSessionToken(null);
         }
 
         String sessionToken = UUID.randomUUID().toString();
-        persistSession(loginRequest.getUsername(), sessionToken);
+        persistSession(loginRequest.getEmail(), sessionToken, "email");
+        String username = getUsernameFromEmail(loginRequest.getEmail());
 
         return new LoginResponse()
                 .setStatus(SUCCESS)
                 .setMessage("login successful!")
                 .setSessionToken(sessionToken)
-                .setLoginRequest(loginRequest);
+                .setUsername(username);
     }
 
     public LogoutResponse logout(String sessionToken) {
@@ -81,13 +97,13 @@ public class UserService {
             deleteSession(sessionToken);
             return new LogoutResponse()
                     .setStatus(LogoutResponseStatus.SUCCESS)
-                    .setMessage("logout successful!")
-                    .setSessionToken(sessionToken);
+                    .setMessage("logout successful!");
+//                    .setSessionToken(sessionToken);
         } else {
             return new LogoutResponse()
                     .setStatus(LogoutResponseStatus.SESSION_TOKEN_NOT_FOUND)
-                    .setMessage("session token not found")
-                    .setSessionToken(sessionToken);
+                    .setMessage("session token not found");
+//                    .setSessionToken(sessionToken);
         }
     }
 
@@ -99,8 +115,8 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    private boolean verifyPassword(String username, String password) {
-        User user = userRepository.findByUsername(username).get();
+    private boolean verifyPassword(String email, String password) {
+        User user = userRepository.findByEmail(email).get();
         return (user.getPassword().equals(password));
     }
 
@@ -113,11 +129,18 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void persistSession(String username, String sessionToken) {
-        User user = userRepository.findByUsername(username).get()
-                .setSessionToken(sessionToken)
-                .setLastLogin(new Date());
-        userRepository.save(user);
+    private void persistSession(String username, String sessionToken, String mode) {
+        if (mode.equals("username")) {
+            User user = userRepository.findByUsername(username).get()
+                    .setSessionToken(sessionToken)
+                    .setLastLogin(new Date());
+            userRepository.save(user);
+        } else {
+            User user = userRepository.findByEmail(username).get()
+                    .setSessionToken(sessionToken)
+                    .setLastLogin(new Date());
+            userRepository.save(user);
+        }
 
         Session session = new Session()
                 .setUsername(username)
@@ -132,8 +155,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    private String getUsernameFromEmail(String email) {
+        return userRepository.findByEmail(email).get().getUsername();
+    }
+
     private void sendConfirmationEmail(RegisterRequest registerRequest) {
         // TODO
     }
-
 }

@@ -3,16 +3,16 @@ package yay.linda.genericbackend.dto;
 public class RegisterResponse {
 
     private RegisterResponseStatus status;
+    private String token;
     private String message;
-    private RegisterRequest registerRequest;
 
     public RegisterResponse() {
     }
 
-    public RegisterResponse(RegisterResponseStatus status, String message, RegisterRequest registerRequest) {
+    public RegisterResponse(RegisterResponseStatus status, String token, String message) {
         this.status = status;
+        this.token = token;
         this.message = message;
-        this.registerRequest = registerRequest;
     }
 
     public RegisterResponseStatus getStatus() {
@@ -24,6 +24,15 @@ public class RegisterResponse {
         return this;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public RegisterResponse setToken(String token) {
+        this.token = token;
+        return this;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -31,24 +40,5 @@ public class RegisterResponse {
     public RegisterResponse setMessage(String message) {
         this.message = message;
         return this;
-    }
-
-    public RegisterRequest getRegisterRequest() {
-        return registerRequest;
-    }
-
-    public RegisterResponse setRegisterRequest(RegisterRequest registerRequest) {
-        registerRequest.setPassword("**********");
-        this.registerRequest = registerRequest;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "RegisterResponse{" +
-                "status=" + status +
-                ", message='" + message + '\'' +
-                ", registerRequest=" + registerRequest +
-                '}';
     }
 }
