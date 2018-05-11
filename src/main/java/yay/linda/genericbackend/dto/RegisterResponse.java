@@ -2,24 +2,24 @@ package yay.linda.genericbackend.dto;
 
 public class RegisterResponse {
 
-    private RegisterResponseStatus status;
+    private ResponseStatus status;
     private String token;
     private String message;
 
     public RegisterResponse() {
     }
 
-    public RegisterResponse(RegisterResponseStatus status, String token, String message) {
+    public RegisterResponse(ResponseStatus status, String token, String message) {
         this.status = status;
         this.token = token;
         this.message = message;
     }
 
-    public RegisterResponseStatus getStatus() {
+    public ResponseStatus getStatus() {
         return status;
     }
 
-    public RegisterResponse setStatus(RegisterResponseStatus status) {
+    public RegisterResponse setStatus(ResponseStatus status) {
         this.status = status;
         return this;
     }

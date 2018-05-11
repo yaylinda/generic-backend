@@ -2,7 +2,7 @@ package yay.linda.genericbackend.dto;
 
 public class LoginResponse {
 
-    private LoginResponseStatus status;
+    private ResponseStatus status;
     private String message;
     private String sessionToken;
     private String username;
@@ -10,18 +10,18 @@ public class LoginResponse {
     public LoginResponse() {
     }
 
-    public LoginResponse(LoginResponseStatus status, String message, String sessionToken, String username) {
+    public LoginResponse(ResponseStatus status, String message, String sessionToken, String username) {
         this.status = status;
         this.message = message;
         this.sessionToken = sessionToken;
         this.username = username;
     }
 
-    public LoginResponseStatus getStatus() {
+    public ResponseStatus getStatus() {
         return status;
     }
 
-    public LoginResponse setStatus(LoginResponseStatus status) {
+    public LoginResponse setStatus(ResponseStatus status) {
         this.status = status;
         return this;
     }

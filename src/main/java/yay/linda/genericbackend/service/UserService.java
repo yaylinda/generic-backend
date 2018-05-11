@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import yay.linda.genericbackend.api.UserController;
 import yay.linda.genericbackend.domain.Session;
 import yay.linda.genericbackend.domain.User;
 import yay.linda.genericbackend.dto.*;
@@ -15,8 +14,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static yay.linda.genericbackend.dto.LoginResponseStatus.*;
-import static yay.linda.genericbackend.dto.RegisterResponseStatus.*;
+import static yay.linda.genericbackend.dto.ResponseStatus.*;
 
 @Service
 public class UserService {
@@ -92,18 +90,9 @@ public class UserService {
                 .setUsername(username);
     }
 
-    public LogoutResponse logout(String sessionToken) {
+    public void logout(String sessionToken) {
         if (sessionExists(sessionToken)) {
             deleteSession(sessionToken);
-            return new LogoutResponse()
-                    .setStatus(LogoutResponseStatus.SUCCESS)
-                    .setMessage("logout successful!");
-//                    .setSessionToken(sessionToken);
-        } else {
-            return new LogoutResponse()
-                    .setStatus(LogoutResponseStatus.SESSION_TOKEN_NOT_FOUND)
-                    .setMessage("session token not found");
-//                    .setSessionToken(sessionToken);
         }
     }
 
