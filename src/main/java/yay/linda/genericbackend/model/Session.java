@@ -1,4 +1,4 @@
-package yay.linda.genericbackend.domain;
+package yay.linda.genericbackend.model;
 
 import org.springframework.data.annotation.Id;
 

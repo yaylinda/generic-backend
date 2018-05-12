@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import yay.linda.genericbackend.domain.Session;
-import yay.linda.genericbackend.domain.User;
-import yay.linda.genericbackend.dto.*;
+import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.SessionRepository;
 import yay.linda.genericbackend.repository.UserRepository;
 
@@ -14,7 +12,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static yay.linda.genericbackend.dto.ResponseStatus.*;
+import static yay.linda.genericbackend.model.ResponseStatus.*;
 
 @Service
 public class UserService {

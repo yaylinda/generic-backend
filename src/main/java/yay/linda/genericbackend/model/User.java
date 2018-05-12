@@ -1,7 +1,6 @@
-package yay.linda.genericbackend.domain;
+package yay.linda.genericbackend.model;
 
 import org.springframework.data.annotation.Id;
-import yay.linda.genericbackend.dto.RegisterRequest;
 
 import java.util.Date;
 

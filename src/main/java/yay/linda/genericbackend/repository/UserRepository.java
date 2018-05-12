@@ -1,7 +1,7 @@
 package yay.linda.genericbackend.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import yay.linda.genericbackend.domain.User;
+import yay.linda.genericbackend.model.User;
 
 import java.util.Optional;
 

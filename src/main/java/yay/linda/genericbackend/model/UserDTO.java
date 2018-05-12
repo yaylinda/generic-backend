@@ -1,4 +1,4 @@
-package yay.linda.genericbackend.dto;
+package yay.linda.genericbackend.model;
 
 public class UserDTO {
 
