@@ -27,7 +27,7 @@ public class GameService {
                 new GameDTO(g, true))
                 .collect(Collectors.toList()));
 
-        List<Game> games2 = gameRepository.findGamesByPlayer1(username);
+        List<Game> games2 = gameRepository.findGamesByPlayer2(username);
         gameDTOs.addAll(games2.stream().map(g ->
                 new GameDTO(g, false))
                 .collect(Collectors.toList()));
@@ -39,6 +39,7 @@ public class GameService {
     public StartGameResponseDTO startGame(String username) {
 
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
+        waitingGames = waitingGames.stream().filter(g -> !g.getPlayer1().equals(username)).collect(Collectors.toList());
 
         Game newGame;
         boolean isPlayer1;

@@ -1,11 +1,15 @@
 package yay.linda.genericbackend.model;
 
+import org.springframework.data.annotation.Id;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Game {
 
+    @Id
+    private String id;
     private String player1;
     private String player2;
     private String currentTurn;
@@ -25,6 +29,7 @@ public class Game {
     }
 
     public Game createGameForPlayer1(String player1) {
+        this.player1 = player1;
         this.currentTurn = player1;
         this.gameBoardMap.put(player1, new GameBoard());
         this.pointsMap.put(player1, 0);
@@ -41,6 +46,15 @@ public class Game {
         this.energyMap.put(player2, 2);
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
+        return this;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Game setId(String id) {
+        this.id = id;
         return this;
     }
 
@@ -132,5 +146,22 @@ public class Game {
     public Game setStatus(GameStatus status) {
         this.status = status;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "Game{" +
+                "id='" + id + '\'' +
+                ", player1='" + player1 + '\'' +
+                ", player2='" + player2 + '\'' +
+                ", currentTurn='" + currentTurn + '\'' +
+                ", gameBoardMap=" + gameBoardMap +
+                ", pointsMap=" + pointsMap +
+                ", energyMap=" + energyMap +
+                ", createdDate=" + createdDate +
+                ", player2JoinTime=" + player2JoinTime +
+                ", completedDate=" + completedDate +
+                ", status=" + status +
+                '}';
     }
 }

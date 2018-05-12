@@ -8,6 +8,7 @@ public class GameDTO {
     private boolean currentTurn;
     private int points;
     private int energy;
+    private GameStatus status;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.username = isPlayer1 ? game.getPlayer1() : game.getPlayer2();
@@ -16,6 +17,7 @@ public class GameDTO {
         this.currentTurn = game.getCurrentTurn().equals(this.username);
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
+        this.status = game.getStatus();
     }
 
     public String getUsername() {
@@ -70,5 +72,27 @@ public class GameDTO {
     public GameDTO setEnergy(int energy) {
         this.energy = energy;
         return this;
+    }
+
+    public GameStatus getStatus() {
+        return status;
+    }
+
+    public GameDTO setStatus(GameStatus status) {
+        this.status = status;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "GameDTO{" +
+                "username='" + username + '\'' +
+                ", opponentName='" + opponentName + '\'' +
+                ", gameBoard=" + gameBoard +
+                ", currentTurn=" + currentTurn +
+                ", points=" + points +
+                ", energy=" + energy +
+                ", status=" + status +
+                '}';
     }
 }

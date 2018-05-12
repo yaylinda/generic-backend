@@ -23,7 +23,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.getGamesByUsername(username));
     }
 
-    @GetMapping("/start/{username}}")
+    @GetMapping("/start/{username}")
     public ResponseEntity<?> startGame(@PathVariable("username") String username) {
         LOGGER.info("START GAME request: username={}", username);
         return ResponseEntity.ok(gameService.startGame(username));
