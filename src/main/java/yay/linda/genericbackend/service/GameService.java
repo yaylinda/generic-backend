@@ -3,6 +3,8 @@ package yay.linda.genericbackend.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
@@ -18,7 +20,10 @@ public class GameService {
     @Autowired
     private GameRepository gameRepository;
 
-    public List<GameDTO> getGamesByUsername(String username) {
+    @Autowired
+    private SimpMessagingTemplate template;
+
+    public List<GameDTO> getGameDTOsByUsername(String username) {
 
         List<GameDTO> gameDTOs = new ArrayList<>();
 
@@ -58,29 +63,47 @@ public class GameService {
         return new GameDTO(newGame, isPlayer1);
     }
 
+    @SendTo("/topic/opponentEndedTurn")
     public GameDTO endTurn(String gameId, String username) {
 
-        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        Game game = getGameById(gameId);
+        LOGGER.info("Got game: {}", game);
 
+        boolean isPlayer1;
+        String opponentName;
+
+        if (game.getPlayer1().equals(username)) {
+            isPlayer1 = true;
+            opponentName = game.getPlayer2();
+        } else {
+            isPlayer1 = false;
+            opponentName = game.getPlayer1();
+        }
+
+        game.setCurrentTurn(opponentName);
+        game.incrementEnergy(opponentName);
+        // TODO - update gameboard for opponent
+
+        gameRepository.save(game);
+
+        GameDTO gameDTO = new GameDTO(game, isPlayer1);
+        this.template.convertAndSend("/topic/opponentEndedTurn", gameId);
+        return gameDTO;
+    }
+
+    public GameDTO getGameDTOByIdAndUsername(String gameId, String username) {
+        Game game = getGameById(gameId);
+        return new GameDTO(game, game.getPlayer1().equals(username));
+    }
+
+    private Game getGameById(String gameId) {
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
         if (optionalGame.isPresent()) {
             Game game = optionalGame.get();
             LOGGER.info("Got game: {}", game);
-            boolean isPlayer1;
-            String opponentName;
-            if (game.getPlayer1().equals(username)) {
-                isPlayer1 = true;
-                opponentName = game.getPlayer2();
-            } else {
-                isPlayer1 = false;
-                opponentName = game.getPlayer1();
-            }
-            game.setCurrentTurn(opponentName);
-            game.incrementEnergy(opponentName);
-            // TODO - update gameboard for opponent
-            gameRepository.save(game);
-            return new GameDTO(game, isPlayer1);
+            return game;
         } else {
-            LOGGER.warn("Could not find game matching gameId={}, username={}", gameId, username);
+            LOGGER.warn("Could not find game matching gameId={}", gameId);
             return null;
         }
     }
