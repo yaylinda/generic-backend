@@ -36,7 +36,7 @@ public class GameService {
         return gameDTOs;
     }
 
-    public StartGameResponseDTO startGame(String username) {
+    public GameDTO startGame(String username) {
 
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
         waitingGames = waitingGames.stream().filter(g -> !g.getPlayer1().equals(username)).collect(Collectors.toList());
@@ -55,9 +55,33 @@ public class GameService {
         }
 
         gameRepository.save(newGame);
+        return new GameDTO(newGame, isPlayer1);
+    }
 
-        return new StartGameResponseDTO()
-                .setGames(getGamesByUsername(username))
-                .setNewGame(new GameDTO(newGame, isPlayer1));
+    public GameDTO endTurn(String gameId, String username) {
+
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+
+        if (optionalGame.isPresent()) {
+            Game game = optionalGame.get();
+            LOGGER.info("Got game: {}", game);
+            boolean isPlayer1;
+            String opponentName;
+            if (game.getPlayer1().equals(username)) {
+                isPlayer1 = true;
+                opponentName = game.getPlayer2();
+            } else {
+                isPlayer1 = false;
+                opponentName = game.getPlayer1();
+            }
+            game.setCurrentTurn(opponentName);
+            game.incrementEnergy(opponentName);
+            // TODO - update gameboard for opponent
+            gameRepository.save(game);
+            return new GameDTO(game, isPlayer1);
+        } else {
+            LOGGER.warn("Could not find game matching gameId={}, username={}", gameId, username);
+            return null;
+        }
     }
 }

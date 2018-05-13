@@ -2,6 +2,7 @@ package yay.linda.genericbackend.model;
 
 public class GameDTO {
 
+    private String id;
     private String username;
     private String opponentName;
     private GameBoard gameBoard;
@@ -11,6 +12,7 @@ public class GameDTO {
     private GameStatus status;
 
     public GameDTO(Game game, boolean isPlayer1) {
+        this.id = game.getId();
         this.username = isPlayer1 ? game.getPlayer1() : game.getPlayer2();
         this.opponentName = isPlayer1 ? game.getPlayer2() : game.getPlayer1();
         this.gameBoard = game.getGameBoardMap().get(username);
@@ -18,6 +20,15 @@ public class GameDTO {
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public GameDTO setId(String id) {
+        this.id = id;
+        return this;
     }
 
     public String getUsername() {

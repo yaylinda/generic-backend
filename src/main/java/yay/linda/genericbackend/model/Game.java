@@ -49,6 +49,11 @@ public class Game {
         return this;
     }
 
+    public Game incrementEnergy(String username) {
+        this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
+        return this;
+    }
+
     public String getId() {
         return id;
     }
