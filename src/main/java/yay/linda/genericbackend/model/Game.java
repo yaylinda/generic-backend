@@ -2,9 +2,7 @@ package yay.linda.genericbackend.model;
 
 import org.springframework.data.annotation.Id;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Game {
 
@@ -13,13 +11,16 @@ public class Game {
     private String player1;
     private String player2;
     private String currentTurn;
-    private Map<String, GameBoard> gameBoardMap;
+    private Map<String, List<List<Cell>>> gameBoardMap;
+    private Map<String, List<List<Cell>>> previousGameBoardMap;
     private Map<String, Integer> pointsMap;
     private Map<String, Integer> energyMap;
     private Date createdDate;
     private Date player2JoinTime;
     private Date completedDate;
     private GameStatus status;
+    private int numRows;
+    private int numCols;
 
     public Game() {
         this.gameBoardMap = new HashMap<>();
@@ -28,31 +29,93 @@ public class Game {
         this.createdDate = new Date();
     }
 
-    public Game createGameForPlayer1(String player1) {
+    /**
+     *
+     * @param player1
+     * @param numRows
+     * @param numCols
+     */
+    public void createGameForPlayer1(String player1, int numRows, int numCols) {
         this.player1 = player1;
         this.currentTurn = player1;
-        this.gameBoardMap.put(player1, new GameBoard());
+        this.gameBoardMap.put(player1, this.initializeGameBoard());
+        this.previousGameBoardMap.put(player1, this.initializeGameBoard());
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1);
         this.createdDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
-        return this;
+        this.numRows = numRows;
+        this.numCols = numCols;
     }
 
-    public Game addPlayer2ToGame(String player2) {
+    /**
+     *
+     * @param player2
+     */
+    public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
-        this.gameBoardMap.put(player2, this.gameBoardMap.get(this.player1).transpose());
+        this.gameBoardMap.put(player2, this.transpose(this.gameBoardMap.get(this.player1)));
+        this.previousGameBoardMap.put(player2, this.initializeGameBoard());
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2);
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
-        return this;
     }
 
-    public Game incrementEnergy(String username) {
-        this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
-        return this;
+    /**
+     *
+     * @param username
+     * @param row
+     * @param col
+     * @param card
+     */
+    public void putCardOnBoard(String username, int row, int col, Card card) {
+        this.previousGameBoardMap.put(username, new ArrayList<>(this.gameBoardMap.get(username)));
+        this.gameBoardMap.get(username).get(row).get(col).setCard(card);
+        this.gameBoardMap.get(username).get(row).get(col).setState(CellState.OCCUPIED);
     }
+
+    /*-------------------------------------------------------------------------
+        PRIVATE HELPER METHODS
+     -------------------------------------------------------------------------*/
+
+    /**
+     *
+     * @param username
+     */
+    public void incrementEnergy(String username) {
+        this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
+    }
+
+    /**
+     *
+     * @return
+     */
+    private List<List<Cell>> initializeGameBoard() {
+        List<List<Cell>> board = new ArrayList<>();
+        for (int i = 0; i < numRows; i++) {
+            List<Cell> row = new ArrayList<>();
+            for (int j = 0; j < numCols; j++) {
+                row.add(new Cell());
+            }
+            board.add(row);
+        }
+        return board;
+    }
+
+    /**
+     *
+     * @param original
+     * @return
+     */
+    private List<List<Cell>> transpose(List<List<Cell>> original) {
+        // TODO - implement transpose method
+        return original;
+    }
+
+    /*-------------------------------------------------------------------------
+        GETTERS / SETTERS
+     -------------------------------------------------------------------------*/
 
     public String getId() {
         return id;
@@ -90,12 +153,21 @@ public class Game {
         return this;
     }
 
-    public Map<String, GameBoard> getGameBoardMap() {
+    public Map<String, List<List<Cell>>> getGameBoardMap() {
         return gameBoardMap;
     }
 
-    public Game setGameBoardMap(Map<String, GameBoard> gameBoardMap) {
+    public Game setGameBoardMap(Map<String, List<List<Cell>>> gameBoardMap) {
         this.gameBoardMap = gameBoardMap;
+        return this;
+    }
+
+    public Map<String, List<List<Cell>>> getPreviousGameBoardMap() {
+        return previousGameBoardMap;
+    }
+
+    public Game setPreviousGameBoardMap(Map<String, List<List<Cell>>> previousGameBoardMap) {
+        this.previousGameBoardMap = previousGameBoardMap;
         return this;
     }
 
@@ -153,6 +225,24 @@ public class Game {
         return this;
     }
 
+    public int getNumRows() {
+        return numRows;
+    }
+
+    public Game setNumRows(int numRows) {
+        this.numRows = numRows;
+        return this;
+    }
+
+    public int getNumCols() {
+        return numCols;
+    }
+
+    public Game setNumCols(int numCols) {
+        this.numCols = numCols;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Game{" +
@@ -161,12 +251,15 @@ public class Game {
                 ", player2='" + player2 + '\'' +
                 ", currentTurn='" + currentTurn + '\'' +
                 ", gameBoardMap=" + gameBoardMap +
+                ", previousGameBoardMap=" + previousGameBoardMap +
                 ", pointsMap=" + pointsMap +
                 ", energyMap=" + energyMap +
                 ", createdDate=" + createdDate +
                 ", player2JoinTime=" + player2JoinTime +
                 ", completedDate=" + completedDate +
                 ", status=" + status +
+                ", numRows=" + numRows +
+                ", numCols=" + numCols +
                 '}';
     }
 }

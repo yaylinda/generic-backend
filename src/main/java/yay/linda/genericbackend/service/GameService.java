@@ -3,9 +3,9 @@ package yay.linda.genericbackend.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
 
@@ -21,8 +21,16 @@ public class GameService {
     private GameRepository gameRepository;
 
     @Autowired
-    private SimpMessagingTemplate template;
+    private GameProperties gameProperties;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    /**
+     *
+     * @param username
+     * @return
+     */
     public List<GameDTO> getGameDTOsByUsername(String username) {
 
         List<GameDTO> gameDTOs = new ArrayList<>();
@@ -41,20 +49,29 @@ public class GameService {
         return gameDTOs;
     }
 
+    /**
+     *
+     * @param username
+     * @return
+     */
     public GameDTO startGame(String username) {
 
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
-        waitingGames = waitingGames.stream().filter(g -> !g.getPlayer1().equals(username)).collect(Collectors.toList());
+        waitingGames = waitingGames.stream()
+                .filter(g -> !g.getPlayer1().equals(username))
+                .collect(Collectors.toList());
 
         Game newGame;
         boolean isPlayer1;
 
         if (waitingGames.size() == 0) {
-            newGame = new Game().createGameForPlayer1(username);
+            newGame = new Game();
+            newGame.createGameForPlayer1(username, this.gameProperties.getNumRows(), this.gameProperties.getNumCols());
             isPlayer1 = true;
             LOGGER.info("No waiting games... created new one: {}", newGame);
         } else {
-            newGame = waitingGames.get(0).addPlayer2ToGame(username);
+            newGame = waitingGames.get(0);
+            newGame.addPlayer2ToGame(username);
             isPlayer1 = false;
             LOGGER.info("Found waiting game... joined: {}", newGame);
         }
@@ -63,7 +80,46 @@ public class GameService {
         return new GameDTO(newGame, isPlayer1);
     }
 
-    @SendTo("/topic/opponentEndedTurn")
+    /**
+     *
+     * @param gameId
+     * @param username
+     * @param putCardDTO
+     * @return
+     */
+    public GameDTO putCard(String gameId, String username, PutCardDTO putCardDTO) {
+
+        Game game = getGameById(gameId);
+        LOGGER.info("Got game: {}", game);
+
+        boolean isPlayer1;
+        String opponentName;
+
+        if (game.getPlayer1().equals(username)) {
+            isPlayer1 = true;
+            opponentName = game.getPlayer2();
+        } else {
+            isPlayer1 = false;
+            opponentName = game.getPlayer1();
+        }
+
+        game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
+
+        int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
+        game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+
+        gameRepository.save(game);
+
+        this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, gameId);
+        return new GameDTO(game, isPlayer1);
+    }
+
+    /**
+     *
+     * @param gameId
+     * @param username
+     * @return
+     */
     public GameDTO endTurn(String gameId, String username) {
 
         Game game = getGameById(gameId);
@@ -82,19 +138,27 @@ public class GameService {
 
         game.setCurrentTurn(opponentName);
         game.incrementEnergy(opponentName);
-        // TODO - update gameboard for opponent
 
         gameRepository.save(game);
 
-        GameDTO gameDTO = new GameDTO(game, isPlayer1);
-        this.template.convertAndSend("/topic/opponentEndedTurn", gameId);
-        return gameDTO;
+        this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
+        return new GameDTO(game, isPlayer1);
     }
 
+    /**
+     *
+     * @param gameId
+     * @param username
+     * @return
+     */
     public GameDTO getGameDTOByIdAndUsername(String gameId, String username) {
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
     }
+
+    /*-------------------------------------------------------------------------
+        PRIVATE HELPER METHODS
+     -------------------------------------------------------------------------*/
 
     private Game getGameById(String gameId) {
         Optional<Game> optionalGame = gameRepository.findById(gameId);
