@@ -1,8 +1,12 @@
 package yay.linda.genericbackend.model;
 
 import org.springframework.data.annotation.Id;
+import yay.linda.genericbackend.service.CardGeneratorUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Game {
 
@@ -11,41 +15,45 @@ public class Game {
     private String player1;
     private String player2;
     private String currentTurn;
-    private Map<String, List<List<Cell>>> gameBoardMap;
-    private Map<String, List<List<Cell>>> previousGameBoardMap;
+    private Map<String, ArrayList<ArrayList<Cell>>> boardMap;
+    private Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap;
     private Map<String, Integer> pointsMap;
     private Map<String, Integer> energyMap;
+    private Map<String, ArrayList<Card>> cardsMap;
     private Date createdDate;
     private Date player2JoinTime;
     private Date completedDate;
     private GameStatus status;
     private int numRows;
     private int numCols;
+    private int numCardsInHand;
 
-    public Game() {
-        this.gameBoardMap = new HashMap<>();
+    public Game(int numRows, int numCols, int numCardsInHand) {
+        this.boardMap = new HashMap<>();
+        this.previousBoardMap = new HashMap<>();
+        this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
         this.createdDate = new Date();
+        this.numRows = numRows;
+        this.numCols = numCols;
+        this.numCardsInHand = numCardsInHand;
     }
 
     /**
      *
      * @param player1
-     * @param numRows
-     * @param numCols
      */
-    public void createGameForPlayer1(String player1, int numRows, int numCols) {
+    public void createGameForPlayer1(String player1) {
         this.player1 = player1;
         this.currentTurn = player1;
-        this.gameBoardMap.put(player1, this.initializeGameBoard());
-        this.previousGameBoardMap.put(player1, this.initializeGameBoard());
+        this.boardMap.put(player1, this.initializeBoard());
+        this.previousBoardMap.put(player1, this.initializeBoard());
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1);
+        this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
         this.createdDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
-        this.numRows = numRows;
-        this.numCols = numCols;
     }
 
     /**
@@ -54,10 +62,11 @@ public class Game {
      */
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
-        this.gameBoardMap.put(player2, this.transpose(this.gameBoardMap.get(this.player1)));
-        this.previousGameBoardMap.put(player2, this.initializeGameBoard());
+        this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
+        this.previousBoardMap.put(player2, this.initializeBoard());
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2);
+        this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
     }
@@ -70,9 +79,9 @@ public class Game {
      * @param card
      */
     public void putCardOnBoard(String username, int row, int col, Card card) {
-        this.previousGameBoardMap.put(username, new ArrayList<>(this.gameBoardMap.get(username)));
-        this.gameBoardMap.get(username).get(row).get(col).setCard(card);
-        this.gameBoardMap.get(username).get(row).get(col).setState(CellState.OCCUPIED);
+        this.previousBoardMap.put(username, new ArrayList<>(this.boardMap.get(username)));
+        this.boardMap.get(username).get(row).get(col).setCard(card);
+        this.boardMap.get(username).get(row).get(col).setState(CellState.OCCUPIED);
     }
 
     /*-------------------------------------------------------------------------
@@ -91,10 +100,10 @@ public class Game {
      *
      * @return
      */
-    private List<List<Cell>> initializeGameBoard() {
-        List<List<Cell>> board = new ArrayList<>();
+    private ArrayList<ArrayList<Cell>> initializeBoard() {
+        ArrayList<ArrayList<Cell>> board = new ArrayList<>();
         for (int i = 0; i < numRows; i++) {
-            List<Cell> row = new ArrayList<>();
+            ArrayList<Cell> row = new ArrayList<>();
             for (int j = 0; j < numCols; j++) {
                 row.add(new Cell());
             }
@@ -108,7 +117,7 @@ public class Game {
      * @param original
      * @return
      */
-    private List<List<Cell>> transpose(List<List<Cell>> original) {
+    private ArrayList<ArrayList<Cell>> transpose(ArrayList<ArrayList<Cell>> original) {
         // TODO - implement transpose method
         return original;
     }
@@ -153,21 +162,21 @@ public class Game {
         return this;
     }
 
-    public Map<String, List<List<Cell>>> getGameBoardMap() {
-        return gameBoardMap;
+    public Map<String, ArrayList<ArrayList<Cell>>> getBoardMap() {
+        return boardMap;
     }
 
-    public Game setGameBoardMap(Map<String, List<List<Cell>>> gameBoardMap) {
-        this.gameBoardMap = gameBoardMap;
+    public Game setBoardMap(Map<String, ArrayList<ArrayList<Cell>>> boardMap) {
+        this.boardMap = boardMap;
         return this;
     }
 
-    public Map<String, List<List<Cell>>> getPreviousGameBoardMap() {
-        return previousGameBoardMap;
+    public Map<String, ArrayList<ArrayList<Cell>>> getPreviousBoardMap() {
+        return previousBoardMap;
     }
 
-    public Game setPreviousGameBoardMap(Map<String, List<List<Cell>>> previousGameBoardMap) {
-        this.previousGameBoardMap = previousGameBoardMap;
+    public Game setPreviousBoardMap(Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap) {
+        this.previousBoardMap = previousBoardMap;
         return this;
     }
 
@@ -186,6 +195,15 @@ public class Game {
 
     public Game setEnergyMap(Map<String, Integer> energyMap) {
         this.energyMap = energyMap;
+        return this;
+    }
+
+    public Map<String, ArrayList<Card>> getCardsMap() {
+        return cardsMap;
+    }
+
+    public Game setCardsMap(Map<String, ArrayList<Card>> cardsMap) {
+        this.cardsMap = cardsMap;
         return this;
     }
 
@@ -250,8 +268,8 @@ public class Game {
                 ", player1='" + player1 + '\'' +
                 ", player2='" + player2 + '\'' +
                 ", currentTurn='" + currentTurn + '\'' +
-                ", gameBoardMap=" + gameBoardMap +
-                ", previousGameBoardMap=" + previousGameBoardMap +
+                ", boardMap=" + boardMap +
+                ", previousBoardMap=" + previousBoardMap +
                 ", pointsMap=" + pointsMap +
                 ", energyMap=" + energyMap +
                 ", createdDate=" + createdDate +

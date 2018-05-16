@@ -65,8 +65,8 @@ public class GameService {
         boolean isPlayer1;
 
         if (waitingGames.size() == 0) {
-            newGame = new Game();
-            newGame.createGameForPlayer1(username, this.gameProperties.getNumRows(), this.gameProperties.getNumCols());
+            newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
+            newGame.createGameForPlayer1(username);
             isPlayer1 = true;
             LOGGER.info("No waiting games... created new one: {}", newGame);
         } else {

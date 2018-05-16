@@ -9,6 +9,7 @@ public class GameProperties {
 
     private int numRows;
     private int numCols;
+    private int numCardsInHand;
 
     public int getNumRows() {
         return numRows;
@@ -25,6 +26,15 @@ public class GameProperties {
 
     public GameProperties setNumCols(int numCols) {
         this.numCols = numCols;
+        return this;
+    }
+
+    public int getNumCardsInHand() {
+        return numCardsInHand;
+    }
+
+    public GameProperties setNumCardsInHand(int numCardsInHand) {
+        this.numCardsInHand = numCardsInHand;
         return this;
     }
 }
