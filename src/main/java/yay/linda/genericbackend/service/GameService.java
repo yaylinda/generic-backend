@@ -154,7 +154,7 @@ public class GameService {
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
         }
 
-        if (game.getPointsMap().get(username) > 10) {
+        if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
             game.setStatus(GameStatus.COMPLETED);
         }
 

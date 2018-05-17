@@ -19,6 +19,7 @@ application:
     numRows: 5
     numCols: 4
     numCardsInHand: 4
+    maxPoints: 20
 
 ---
 

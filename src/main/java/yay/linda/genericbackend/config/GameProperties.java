@@ -10,6 +10,7 @@ public class GameProperties {
     private int numRows;
     private int numCols;
     private int numCardsInHand;
+    private int maxPoints;
 
     public int getNumRows() {
         return numRows;
@@ -35,6 +36,15 @@ public class GameProperties {
 
     public GameProperties setNumCardsInHand(int numCardsInHand) {
         this.numCardsInHand = numCardsInHand;
+        return this;
+    }
+
+    public int getMaxPoints() {
+        return maxPoints;
+    }
+
+    public GameProperties setMaxPoints(int maxPoints) {
+        this.maxPoints = maxPoints;
         return this;
     }
 }
