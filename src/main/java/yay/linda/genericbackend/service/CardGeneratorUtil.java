@@ -1,6 +1,5 @@
 package yay.linda.genericbackend.service;
 
-import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CardType;
 
@@ -15,7 +14,7 @@ public class CardGeneratorUtil {
         int might = randomizeMightStat();
         int move = randomizeMoveStat(cardType);
         return new Card()
-                .setCardType(cardType)
+                .setType(cardType)
                 .setOwner(username)
                 .setMight(might)
                 .setMovement(move)
@@ -42,7 +41,7 @@ public class CardGeneratorUtil {
 
     private static int randomizeMoveStat(CardType cardType) {
         int movement = 0;
-        if (cardType.equals(CardType.ATTACK)) {
+        if (cardType.equals(CardType.TROOP)) {
             movement = 1;
         }
         return movement;

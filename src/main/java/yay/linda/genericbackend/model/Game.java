@@ -118,8 +118,11 @@ public class Game {
      * @return
      */
     private ArrayList<ArrayList<Cell>> transpose(ArrayList<ArrayList<Cell>> original) {
-        // TODO - implement transpose method
-        return original;
+        ArrayList<ArrayList<Cell>> transposed = new ArrayList<>();
+        for (int i = original.size() - 1; i >=0; i--) {
+            transposed.add(original.get(i));
+        }
+        return transposed;
     }
 
     /*-------------------------------------------------------------------------

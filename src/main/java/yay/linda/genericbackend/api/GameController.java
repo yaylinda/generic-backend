@@ -54,4 +54,10 @@ public class GameController {
         LOGGER.info("END TURN request: gameId={}, username={}", gameId, username);
         return ResponseEntity.ok(gameService.endTurn(gameId, username));
     }
+
+    @GetMapping("/card/{gameId}/{username}/{usedCardIndex}")
+    public ResponseEntity<?> drawCard(@PathVariable("gameId") String gameId, @PathVariable("username") String username, @PathVariable("usedCardIndex") int usedCardIndex) {
+        LOGGER.info("DRAW CARD request: username={}", username);
+        return ResponseEntity.ok(gameService.drawCard(gameId, username, usedCardIndex));
+    }
 }

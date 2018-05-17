@@ -2,7 +2,7 @@ package yay.linda.genericbackend.model;
 
 public class Card {
 
-    private CardType cardType;
+    private CardType type;
     private int might;
     private int movement;
     private double cost;
@@ -12,8 +12,8 @@ public class Card {
     public Card() {
     }
 
-    public Card(CardType cardType, int might, int movement, double cost, String owner, String specialAbility) {
-        this.cardType = cardType;
+    public Card(CardType type, int might, int movement, double cost, String owner, String specialAbility) {
+        this.type = type;
         this.might = might;
         this.movement = movement;
         this.cost = cost;
@@ -21,12 +21,12 @@ public class Card {
         this.specialAbility = specialAbility;
     }
 
-    public CardType getCardType() {
-        return cardType;
+    public CardType getType() {
+        return type;
     }
 
-    public Card setCardType(CardType cardType) {
-        this.cardType = cardType;
+    public Card setType(CardType type) {
+        this.type = type;
         return this;
     }
 
@@ -78,7 +78,7 @@ public class Card {
     @Override
     public String toString() {
         return "Card{" +
-                "cardType=" + cardType +
+                "type=" + type +
                 ", might=" + might +
                 ", movement=" + movement +
                 ", cost=" + cost +

@@ -73,6 +73,7 @@ public class GameService {
             newGame = waitingGames.get(0);
             newGame.addPlayer2ToGame(username);
             isPlayer1 = false;
+            // TODO send message to player1
             LOGGER.info("Found waiting game... joined: {}", newGame);
         }
 
@@ -105,8 +106,10 @@ public class GameService {
 
         game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
 
-        int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
-        game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+        if (game.getStatus() == GameStatus.IN_PROGRESS) {
+            int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
+            game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+        }
 
         gameRepository.save(game);
 
@@ -154,6 +157,27 @@ public class GameService {
     public GameDTO getGameDTOByIdAndUsername(String gameId, String username) {
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
+    }
+
+    /**
+     *
+     * @param gameId
+     * @param username
+     * @param usedCardIndex
+     * @return
+     */
+    public Card drawCard(String gameId, String username, int usedCardIndex) {
+        Card newCard = CardGeneratorUtil.generateCard(username);
+        LOGGER.info("Generated new card: {}", newCard);
+
+        Game game = getGameById(gameId);
+        LOGGER.info("Got game: {}", game);
+
+        game.getCardsMap().get(username).set(usedCardIndex, newCard);
+
+        gameRepository.save(game);
+
+        return newCard;
     }
 
     /*-------------------------------------------------------------------------
