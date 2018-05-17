@@ -141,10 +141,21 @@ public class GameService {
             game.setPlayer1sTurn(true);
         }
 
+        game.updatePreviousBoard(username);
+        if (game.getNumTurnsMap().get(username) > 0) {
+            game.advanceTroops(username, opponentName);
+        }
+
         game.incrementNumTurns(username);
+        game.incrementEnergy(username);
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
-            game.incrementEnergy(opponentName);
+            game.updatePreviousBoard(opponentName);
+            game.advanceTroopsForOpponent(username, opponentName);
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
+        }
+
+        if (game.getPointsMap().get(username) > 10) {
+            game.setStatus(GameStatus.COMPLETED);
         }
 
         gameRepository.save(game);

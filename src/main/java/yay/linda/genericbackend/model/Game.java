@@ -49,8 +49,8 @@ public class Game {
     public void createGameForPlayer1(String player1) {
         this.player1 = player1;
         this.player1sTurn = true;
-        this.boardMap.put(player1, this.initializeBoard());
-        this.previousBoardMap.put(player1, this.initializeBoard());
+        this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
+        this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1);
         this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
@@ -66,7 +66,7 @@ public class Game {
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
         this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
-        this.previousBoardMap.put(player2, this.initializeBoard());
+        this.previousBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2);
         this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
@@ -96,8 +96,80 @@ public class Game {
         this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
     }
 
+    /**
+     *
+     * @param username
+     */
     public void incrementNumTurns(String username) {
         this.getNumTurnsMap().put(username, this.getNumTurnsMap().get(username) + 1);
+    }
+
+    /**
+     *
+     * @param username
+     */
+    public void updatePreviousBoard(String username) {
+        ArrayList<ArrayList<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
+        this.getPreviousBoardMap().put(username, board);
+    }
+
+    /**
+     *
+     * @param username
+     * @param opponentName
+     */
+    public void advanceTroops(String username, String opponentName) {
+        ArrayList<ArrayList<Cell>> board = initializeBoard(numRows, numCols);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                Cell cell = this.getBoardMap().get(username).get(i).get(j);
+                if (cell.getCard() != null) {
+                    Card card = cell.getCard();
+                    if (card.getType() == CardType.TROOP && card.getOwner().equals(username)) {
+                        int newRow = i - cell.getCard().getMovement();
+                        if (newRow < 0) {
+                            this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
+                        } else {
+                            Cell cellAtNewPosition = this.getBoardMap().get(username).get(newRow).get(j);
+                            if (cellAtNewPosition.getCard() != null) {
+                                Card cardAtNewPosition = cell.getCard();
+                                if (cardAtNewPosition.getOwner().equals(username)) {
+                                    if (cardAtNewPosition.getType() == card.getType()) {
+                                        cell.getCard().setMight(card.getMight() + cardAtNewPosition.getMight());
+                                    } else {
+                                        cell.getCard().setMight(card.getMight() + cardAtNewPosition.getMight());
+                                        cell.getCard().setType(CardType.WALL);
+                                    }
+                                } else {
+                                    int mightDiff = card.getMight() - cardAtNewPosition.getMight();
+                                    if (mightDiff > 0) {
+                                        cell.getCard().setMight(mightDiff);
+                                    } else if (mightDiff < 0) {
+                                        cell.getCard().setMight(mightDiff * -1);
+                                        cell.getCard().setOwner(opponentName);
+                                    } else {
+                                        cell.setCard(null);
+                                    }
+                                }
+                            }
+                            board.get(newRow).set(j, cell);
+                        }
+                    } else {
+                        board.get(i).set(j, cell);
+                    }
+                }
+            }
+        }
+        this.getBoardMap().put(username, board);
+    }
+
+    /**
+     *
+     * @param username
+     * @param opponentName
+     */
+    public void advanceTroopsForOpponent(String username, String opponentName) {
+        this.getBoardMap().put(opponentName, this.transpose(this.getBoardMap().get(username)));
     }
 
     /*-------------------------------------------------------------------------
@@ -108,7 +180,7 @@ public class Game {
      *
      * @return
      */
-    private ArrayList<ArrayList<Cell>> initializeBoard() {
+    private ArrayList<ArrayList<Cell>> initializeBoard(int numRows, int numCols) {
         ArrayList<ArrayList<Cell>> board = new ArrayList<>();
         for (int i = 0; i < numRows; i++) {
             ArrayList<Cell> row = new ArrayList<>();
