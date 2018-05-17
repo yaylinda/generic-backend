@@ -14,12 +14,13 @@ public class Game {
     private String id;
     private String player1;
     private String player2;
-    private String currentTurn;
+    private boolean player1sTurn;
     private Map<String, ArrayList<ArrayList<Cell>>> boardMap;
     private Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap;
     private Map<String, Integer> pointsMap;
     private Map<String, Integer> energyMap;
     private Map<String, ArrayList<Card>> cardsMap;
+    private Map<String, Integer> numMovesMap;
     private Date createdDate;
     private Date player2JoinTime;
     private Date completedDate;
@@ -34,6 +35,7 @@ public class Game {
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
+        this.numMovesMap = new HashMap<>();
         this.createdDate = new Date();
         this.numRows = numRows;
         this.numCols = numCols;
@@ -46,12 +48,13 @@ public class Game {
      */
     public void createGameForPlayer1(String player1) {
         this.player1 = player1;
-        this.currentTurn = player1;
+        this.player1sTurn = true;
         this.boardMap.put(player1, this.initializeBoard());
         this.previousBoardMap.put(player1, this.initializeBoard());
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1);
         this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
+        this.numMovesMap.put(player1, 0);
         this.createdDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
     }
@@ -67,6 +70,7 @@ public class Game {
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2);
         this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
+        this.numMovesMap.put(player2, 0);
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
     }
@@ -156,12 +160,12 @@ public class Game {
         return this;
     }
 
-    public String getCurrentTurn() {
-        return currentTurn;
+    public boolean isPlayer1sTurn() {
+        return player1sTurn;
     }
 
-    public Game setCurrentTurn(String currentTurn) {
-        this.currentTurn = currentTurn;
+    public Game setPlayer1sTurn(boolean player1sTurn) {
+        this.player1sTurn = player1sTurn;
         return this;
     }
 
@@ -207,6 +211,15 @@ public class Game {
 
     public Game setCardsMap(Map<String, ArrayList<Card>> cardsMap) {
         this.cardsMap = cardsMap;
+        return this;
+    }
+
+    public Map<String, Integer> getNumMovesMap() {
+        return numMovesMap;
+    }
+
+    public Game setNumMovesMap(Map<String, Integer> numMovesMap) {
+        this.numMovesMap = numMovesMap;
         return this;
     }
 
@@ -264,23 +277,35 @@ public class Game {
         return this;
     }
 
+    public int getNumCardsInHand() {
+        return numCardsInHand;
+    }
+
+    public Game setNumCardsInHand(int numCardsInHand) {
+        this.numCardsInHand = numCardsInHand;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Game{" +
                 "id='" + id + '\'' +
                 ", player1='" + player1 + '\'' +
                 ", player2='" + player2 + '\'' +
-                ", currentTurn='" + currentTurn + '\'' +
+                ", player1sTurn=" + player1sTurn +
                 ", boardMap=" + boardMap +
                 ", previousBoardMap=" + previousBoardMap +
                 ", pointsMap=" + pointsMap +
                 ", energyMap=" + energyMap +
+                ", cardsMap=" + cardsMap +
+                ", numMovesMap=" + numMovesMap +
                 ", createdDate=" + createdDate +
                 ", player2JoinTime=" + player2JoinTime +
                 ", completedDate=" + completedDate +
                 ", status=" + status +
                 ", numRows=" + numRows +
                 ", numCols=" + numCols +
+                ", numCardsInHand=" + numCardsInHand +
                 '}';
     }
 }

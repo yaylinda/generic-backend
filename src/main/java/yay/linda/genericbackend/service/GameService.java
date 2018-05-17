@@ -134,17 +134,20 @@ public class GameService {
         if (game.getPlayer1().equals(username)) {
             isPlayer1 = true;
             opponentName = game.getPlayer2();
+            game.setPlayer1sTurn(false);
         } else {
             isPlayer1 = false;
             opponentName = game.getPlayer1();
+            game.setPlayer1sTurn(true);
         }
 
-        game.setCurrentTurn(opponentName);
-        game.incrementEnergy(opponentName);
+        if (game.getStatus() == GameStatus.IN_PROGRESS) {
+            game.incrementEnergy(opponentName);
+            this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
+        }
 
         gameRepository.save(game);
 
-        this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
         return new GameDTO(game, isPlayer1);
     }
 

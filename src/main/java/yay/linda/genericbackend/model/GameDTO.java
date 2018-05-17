@@ -22,10 +22,18 @@ public class GameDTO {
         this.board = game.getBoardMap().get(username);
         this.previousBoard = game.getPreviousBoardMap().get(username);
         this.cards = game.getCardsMap().get(username);
-        this.currentTurn = game.getCurrentTurn().equals(this.username);
+        this.currentTurn = calculateCurrentTurn(isPlayer1, game.isPlayer1sTurn());
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
+    }
+
+    private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
+        if (isPlayer1) {
+            return isPlayer1sTurn;
+        } else {
+            return !isPlayer1sTurn;
+        }
     }
 
     public String getId() {
