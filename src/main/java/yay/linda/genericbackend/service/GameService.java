@@ -141,13 +141,13 @@ public class GameService {
             game.setPlayer1sTurn(true);
         }
 
+        game.incrementNumTurns(username);
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.incrementEnergy(opponentName);
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
         }
 
         gameRepository.save(game);
-
         return new GameDTO(game, isPlayer1);
     }
 

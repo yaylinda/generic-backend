@@ -14,6 +14,7 @@ public class GameDTO {
     private int points;
     private int energy;
     private GameStatus status;
+    private int numTurns;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -26,6 +27,7 @@ public class GameDTO {
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
+        this.numTurns = game.getNumTurnsMap().get(username);
     }
 
     private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
@@ -126,6 +128,15 @@ public class GameDTO {
         return this;
     }
 
+    public int getNumTurns() {
+        return numTurns;
+    }
+
+    public GameDTO setNumTurns(int numTurns) {
+        this.numTurns = numTurns;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "GameDTO{" +
@@ -139,6 +150,7 @@ public class GameDTO {
                 ", points=" + points +
                 ", energy=" + energy +
                 ", status=" + status +
+                ", numTurns=" + numTurns +
                 '}';
     }
 }

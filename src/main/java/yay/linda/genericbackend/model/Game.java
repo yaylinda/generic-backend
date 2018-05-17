@@ -20,7 +20,7 @@ public class Game {
     private Map<String, Integer> pointsMap;
     private Map<String, Integer> energyMap;
     private Map<String, ArrayList<Card>> cardsMap;
-    private Map<String, Integer> numMovesMap;
+    private Map<String, Integer> numTurnsMap;
     private Date createdDate;
     private Date player2JoinTime;
     private Date completedDate;
@@ -35,7 +35,7 @@ public class Game {
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
-        this.numMovesMap = new HashMap<>();
+        this.numTurnsMap = new HashMap<>();
         this.createdDate = new Date();
         this.numRows = numRows;
         this.numCols = numCols;
@@ -54,7 +54,7 @@ public class Game {
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1);
         this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
-        this.numMovesMap.put(player1, 0);
+        this.numTurnsMap.put(player1, 0);
         this.createdDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
     }
@@ -70,7 +70,7 @@ public class Game {
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2);
         this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
-        this.numMovesMap.put(player2, 0);
+        this.numTurnsMap.put(player2, 0);
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
     }
@@ -88,10 +88,6 @@ public class Game {
         this.boardMap.get(username).get(row).get(col).setState(CellState.OCCUPIED);
     }
 
-    /*-------------------------------------------------------------------------
-        PRIVATE HELPER METHODS
-     -------------------------------------------------------------------------*/
-
     /**
      *
      * @param username
@@ -99,6 +95,14 @@ public class Game {
     public void incrementEnergy(String username) {
         this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
     }
+
+    public void incrementNumTurns(String username) {
+        this.getNumTurnsMap().put(username, this.getNumTurnsMap().get(username) + 1);
+    }
+
+    /*-------------------------------------------------------------------------
+        PRIVATE HELPER METHODS
+     -------------------------------------------------------------------------*/
 
     /**
      *
@@ -214,12 +218,12 @@ public class Game {
         return this;
     }
 
-    public Map<String, Integer> getNumMovesMap() {
-        return numMovesMap;
+    public Map<String, Integer> getNumTurnsMap() {
+        return numTurnsMap;
     }
 
-    public Game setNumMovesMap(Map<String, Integer> numMovesMap) {
-        this.numMovesMap = numMovesMap;
+    public Game setNumTurnsMap(Map<String, Integer> numTurnsMap) {
+        this.numTurnsMap = numTurnsMap;
         return this;
     }
 
@@ -298,7 +302,7 @@ public class Game {
                 ", pointsMap=" + pointsMap +
                 ", energyMap=" + energyMap +
                 ", cardsMap=" + cardsMap +
-                ", numMovesMap=" + numMovesMap +
+                ", numTurnsMap=" + numTurnsMap +
                 ", createdDate=" + createdDate +
                 ", player2JoinTime=" + player2JoinTime +
                 ", completedDate=" + completedDate +
