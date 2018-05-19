@@ -8,17 +8,10 @@ public class Card {
     private double cost;
     private String owner;
     private String specialAbility; // TODO v2
+    private int numTurnsOnBoard;
 
     public Card() {
-    }
-
-    public Card(CardType type, int might, int movement, double cost, String owner, String specialAbility) {
-        this.type = type;
-        this.might = might;
-        this.movement = movement;
-        this.cost = cost;
-        this.owner = owner;
-        this.specialAbility = specialAbility;
+        this.numTurnsOnBoard = 0;
     }
 
     public CardType getType() {
@@ -75,6 +68,15 @@ public class Card {
         return this;
     }
 
+    public int getNumTurnsOnBoard() {
+        return numTurnsOnBoard;
+    }
+
+    public Card setNumTurnsOnBoard(int numTurnsOnBoard) {
+        this.numTurnsOnBoard = numTurnsOnBoard;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Card{" +
@@ -84,6 +86,7 @@ public class Card {
                 ", cost=" + cost +
                 ", owner='" + owner + '\'' +
                 ", specialAbility='" + specialAbility + '\'' +
+                ", numTurnsOnBoard=" + numTurnsOnBoard +
                 '}';
     }
 }

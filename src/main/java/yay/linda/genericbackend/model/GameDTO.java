@@ -12,9 +12,11 @@ public class GameDTO {
     private ArrayList<Card> cards;
     private boolean currentTurn;
     private int points;
-    private int energy;
+    private double energy;
     private GameStatus status;
     private int numTurns;
+    private int opponentPoints;
+    private int numCardsPlayed;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -28,6 +30,10 @@ public class GameDTO {
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
         this.numTurns = game.getNumTurnsMap().get(username);
+        this.numCardsPlayed = game.getNumCardsPlayedMap().get(username);
+        if (this.opponentName != null) {
+            this.opponentPoints = game.getPointsMap().get(this.opponentName);
+        }
     }
 
     private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
@@ -110,11 +116,11 @@ public class GameDTO {
         return this;
     }
 
-    public int getEnergy() {
+    public double getEnergy() {
         return energy;
     }
 
-    public GameDTO setEnergy(int energy) {
+    public GameDTO setEnergy(double energy) {
         this.energy = energy;
         return this;
     }
@@ -137,6 +143,24 @@ public class GameDTO {
         return this;
     }
 
+    public int getOpponentPoints() {
+        return opponentPoints;
+    }
+
+    public GameDTO setOpponentPoints(int opponentPoints) {
+        this.opponentPoints = opponentPoints;
+        return this;
+    }
+
+    public int getNumCardsPlayed() {
+        return numCardsPlayed;
+    }
+
+    public GameDTO setNumCardsPlayed(int numCardsPlayed) {
+        this.numCardsPlayed = numCardsPlayed;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "GameDTO{" +
@@ -151,6 +175,8 @@ public class GameDTO {
                 ", energy=" + energy +
                 ", status=" + status +
                 ", numTurns=" + numTurns +
+                ", opponentPoints=" + opponentPoints +
+                ", numCardsPlayed=" + numCardsPlayed +
                 '}';
     }
 }

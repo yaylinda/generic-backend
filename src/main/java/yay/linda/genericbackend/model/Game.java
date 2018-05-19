@@ -1,5 +1,7 @@
 package yay.linda.genericbackend.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import yay.linda.genericbackend.service.CardGeneratorUtil;
 
@@ -10,6 +12,8 @@ import java.util.Map;
 
 public class Game {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
+
     @Id
     private String id;
     private String player1;
@@ -18,9 +22,10 @@ public class Game {
     private Map<String, ArrayList<ArrayList<Cell>>> boardMap;
     private Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap;
     private Map<String, Integer> pointsMap;
-    private Map<String, Integer> energyMap;
+    private Map<String, Double> energyMap;
     private Map<String, ArrayList<Card>> cardsMap;
     private Map<String, Integer> numTurnsMap;
+    private Map<String, Integer> numCardsPlayedMap;
     private Date createdDate;
     private Date player2JoinTime;
     private Date completedDate;
@@ -36,6 +41,7 @@ public class Game {
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
         this.numTurnsMap = new HashMap<>();
+        this.numCardsPlayedMap = new HashMap<>();
         this.createdDate = new Date();
         this.numRows = numRows;
         this.numCols = numCols;
@@ -52,8 +58,9 @@ public class Game {
         this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
-        this.energyMap.put(player1, 1);
+        this.energyMap.put(player1, 1.0);
         this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
+        this.numCardsPlayedMap.put(player1, 0);
         this.numTurnsMap.put(player1, 0);
         this.createdDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
@@ -68,8 +75,9 @@ public class Game {
         this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
         this.previousBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
-        this.energyMap.put(player2, 2);
+        this.energyMap.put(player2, 2.0);
         this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
+        this.numCardsPlayedMap.put(player2, 0);
         this.numTurnsMap.put(player2, 0);
         this.player2JoinTime = new Date();
         this.status = GameStatus.IN_PROGRESS;
@@ -93,7 +101,7 @@ public class Game {
      * @param username
      */
     public void incrementEnergy(String username) {
-        this.getEnergyMap().put(username, this.energyMap.get(username) + 1);
+        this.getEnergyMap().put(username, Math.min(this.energyMap.get(username) + this.getNumTurnsMap().get(username), 10));
     }
 
     /**
@@ -102,6 +110,12 @@ public class Game {
      */
     public void incrementNumTurns(String username) {
         this.getNumTurnsMap().put(username, this.getNumTurnsMap().get(username) + 1);
+        boardMap.get(username).forEach(rows ->
+                rows.forEach(cell -> {
+                    if (cell.getCard() != null && cell.getCard().getOwner().equals(username)) {
+                        cell.getCard().setNumTurnsOnBoard(cell.getCard().getNumTurnsOnBoard() + 1);
+                    }
+                }));
     }
 
     /**
@@ -119,20 +133,24 @@ public class Game {
      * @param opponentName
      */
     public void advanceTroops(String username, String opponentName) {
+        LOGGER.info("advancing troops for {}", username);
         ArrayList<ArrayList<Cell>> board = initializeBoard(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 Cell cell = this.getBoardMap().get(username).get(i).get(j);
                 if (cell.getCard() != null) {
                     Card card = cell.getCard();
-                    if (card.getType() == CardType.TROOP && card.getOwner().equals(username)) {
+                    if (card.getType() == CardType.TROOP && card.getOwner().equals(username) && card.getNumTurnsOnBoard() > 0) {
                         int newRow = i - cell.getCard().getMovement();
                         if (newRow < 0) {
                             this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
                         } else {
                             Cell cellAtNewPosition = this.getBoardMap().get(username).get(newRow).get(j);
                             if (cellAtNewPosition.getCard() != null) {
-                                Card cardAtNewPosition = cell.getCard();
+                                LOGGER.info("clash!");
+                                LOGGER.info("user's card: {}", card);
+                                Card cardAtNewPosition = cellAtNewPosition.getCard();
+                                LOGGER.info("card at new position: {}", cardAtNewPosition);
                                 if (cardAtNewPosition.getOwner().equals(username)) {
                                     if (cardAtNewPosition.getType() == card.getType()) {
                                         cell.getCard().setMight(card.getMight() + cardAtNewPosition.getMight());
@@ -142,6 +160,7 @@ public class Game {
                                     }
                                 } else {
                                     int mightDiff = card.getMight() - cardAtNewPosition.getMight();
+                                    LOGGER.info("mightDiff: " + mightDiff);
                                     if (mightDiff > 0) {
                                         cell.getCard().setMight(mightDiff);
                                     } else if (mightDiff < 0) {
@@ -272,11 +291,11 @@ public class Game {
         return this;
     }
 
-    public Map<String, Integer> getEnergyMap() {
+    public Map<String, Double> getEnergyMap() {
         return energyMap;
     }
 
-    public Game setEnergyMap(Map<String, Integer> energyMap) {
+    public Game setEnergyMap(Map<String, Double> energyMap) {
         this.energyMap = energyMap;
         return this;
     }
@@ -362,6 +381,15 @@ public class Game {
         return this;
     }
 
+    public Map<String, Integer> getNumCardsPlayedMap() {
+        return numCardsPlayedMap;
+    }
+
+    public Game setNumCardsPlayedMap(Map<String, Integer> numCardsPlayedMap) {
+        this.numCardsPlayedMap = numCardsPlayedMap;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Game{" +
@@ -375,6 +403,7 @@ public class Game {
                 ", energyMap=" + energyMap +
                 ", cardsMap=" + cardsMap +
                 ", numTurnsMap=" + numTurnsMap +
+                ", numCardsPlayedMap=" + numCardsPlayedMap +
                 ", createdDate=" + createdDate +
                 ", player2JoinTime=" + player2JoinTime +
                 ", completedDate=" + completedDate +

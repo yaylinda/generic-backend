@@ -73,7 +73,7 @@ public class GameService {
             newGame = waitingGames.get(0);
             newGame.addPlayer2ToGame(username);
             isPlayer1 = false;
-            // TODO send message to player1
+            this.messagingTemplate.convertAndSend("/topic/player2Joined/" + newGame.getPlayer1(), newGame.getId());
             LOGGER.info("Found waiting game... joined: {}", newGame);
         }
 
@@ -105,11 +105,13 @@ public class GameService {
         }
 
         game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
-
+        game.getNumCardsPlayedMap().put(username, game.getNumCardsPlayedMap().get(username) + 1);
+        game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardDTO.getCard().getCost());
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
             game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
         }
+        game.getNumTurnsMap().put(username, game.getNumTurnsMap().get(username) + 1);
 
         gameRepository.save(game);
 
@@ -142,12 +144,10 @@ public class GameService {
         }
 
         game.updatePreviousBoard(username);
-        if (game.getNumTurnsMap().get(username) > 0) {
-            game.advanceTroops(username, opponentName);
-        }
-
+        game.advanceTroops(username, opponentName);
         game.incrementNumTurns(username);
         game.incrementEnergy(username);
+
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.updatePreviousBoard(opponentName);
             game.advanceTroopsForOpponent(username, opponentName);
