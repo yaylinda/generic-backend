@@ -31,8 +31,9 @@ public class CardGeneratorUtil {
     }
 
     private static CardType randomizeCardType() {
-        int index = getRandomNumberInRange(0, CardType.values().length - 1);
-        return CardType.values()[index];
+        Random random = new Random();
+        int randomInt = random.nextInt(100);
+        return randomInt <= 25 ? CardType.WALL : CardType.TROOP;
     }
 
     private static int randomizeMightStat() {
