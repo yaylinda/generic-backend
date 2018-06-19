@@ -101,7 +101,13 @@ public class Game {
      * @param username
      */
     public void incrementEnergy(String username) {
-        this.getEnergyMap().put(username, Math.min(this.energyMap.get(username) + this.getNumTurnsMap().get(username), 10));
+        double baseEnergy;
+        if (username.equalsIgnoreCase(this.player1)) {
+            baseEnergy = 1;
+        } else {
+            baseEnergy = 2;
+        }
+        this.getEnergyMap().put(username, Math.min(baseEnergy + this.getNumTurnsMap().get(username), 10));
     }
 
     /**
