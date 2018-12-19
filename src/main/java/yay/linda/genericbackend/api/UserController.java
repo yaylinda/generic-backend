@@ -21,7 +21,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{token}")
-    public ResponseEntity<?> getUserFromToken(@PathVariable("token") String token) {
+    public ResponseEntity<UserDTO> getUserFromToken(@PathVariable("token") String token) {
         LOGGER.info("GET USER request: token={}", token);
         UserDTO userDTO = userService.getUserFromToken(token);
         if (userDTO != null) {
@@ -33,18 +33,19 @@ public class UserController {
         }
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    @PostMapping("/register")
+    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
         LOGGER.info("REGISTER request: {}", registerRequest);
 
         RegisterResponse registerResponse = userService.register(registerRequest);
         LOGGER.info("REGISTER response: {}", registerResponse);
 
         if (registerResponse.getStatus() == ResponseStatus.CREATED) {
-            return ResponseEntity.ok(new UserDTO()
-                    .setEmail(registerRequest.getEmail())
-                    .setToken(registerResponse.getToken())
-                    .setUsername(registerRequest.getUsername()));
+            return ResponseEntity.ok(UserDTO.builder()
+                    .email(registerRequest.getEmail())
+                    .token(registerResponse.getToken())
+                    .username(registerRequest.getUsername())
+                    .build());
         } else {
             return new ResponseEntity(
                     new ErrorDTO(registerResponse.getStatus(), registerResponse.getMessage()),
@@ -53,17 +54,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<UserDTO> login(@RequestBody LoginRequest loginRequest) {
         LOGGER.info("LOGIN request: {}", loginRequest);
 
         LoginResponse loginResponse = userService.login(loginRequest);
         LOGGER.info("LOGIN response: {}", loginResponse);
 
         if (loginResponse.getStatus() == ResponseStatus.SUCCESS) {
-            return ResponseEntity.ok(new UserDTO()
-                    .setEmail(loginRequest.getEmail())
-                    .setToken(loginResponse.getSessionToken())
-                    .setUsername(loginResponse.getUsername()));
+            return ResponseEntity.ok(UserDTO.builder()
+                    .email(loginRequest.getEmail())
+                    .token(loginResponse.getSessionToken())
+                    .username(loginResponse.getUsername())
+                    .build());
         } else {
             return new ResponseEntity(
                     new ErrorDTO(loginResponse.getStatus(), loginResponse.getMessage()),

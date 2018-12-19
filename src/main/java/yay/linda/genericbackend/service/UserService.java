@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.SessionRepository;
 import yay.linda.genericbackend.repository.UserRepository;
@@ -30,7 +31,11 @@ public class UserService {
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             LOGGER.info("Found! {}", user);
-            return new UserDTO(user.getEmail(), user.getSessionToken(), user.getUsername());
+            return UserDTO.builder()
+                    .email(user.getEmail())
+                    .token(user.getSessionToken())
+                    .username(user.getUsername())
+                    .build();
         } else {
             LOGGER.warn("No user found matching sessionToken={}", sessionToken);
             return null;
@@ -63,14 +68,28 @@ public class UserService {
 
     public LoginResponse login(LoginRequest loginRequest) {
 
-        if (!usernameExists(loginRequest.getEmail())) {
-            return new LoginResponse()
-                    .setStatus(EMAIL_NOT_FOUND)
-                    .setMessage("email not found")
-                    .setSessionToken(null);
+        String username;
+
+        // check if username or email is found
+        if (!StringUtils.isEmpty(loginRequest.getUsername())) {
+            username = loginRequest.getUsername();
+            if (!usernameExists(loginRequest.getUsername())) {
+                return new LoginResponse()
+                        .setStatus(USERNAME_NOT_FOUND)
+                        .setMessage("username not found")
+                        .setSessionToken(null);
+            }
+        } else {
+            username = getUsernameFromEmail(loginRequest.getEmail());
+            if (!usernameExists(loginRequest.getEmail())) {
+                return new LoginResponse()
+                        .setStatus(EMAIL_NOT_FOUND)
+                        .setMessage("email not found")
+                        .setSessionToken(null);
+            }
         }
 
-        if (!verifyPassword(loginRequest.getEmail(), loginRequest.getPassword())) {
+        if (!verifyPassword(username, loginRequest.getPassword())) {
             return new LoginResponse()
                     .setStatus(WRONG_PASSWORD)
                     .setMessage("wrong password")
@@ -79,7 +98,6 @@ public class UserService {
 
         String sessionToken = UUID.randomUUID().toString();
         persistSession(loginRequest.getEmail(), sessionToken, "email");
-        String username = getUsernameFromEmail(loginRequest.getEmail());
 
         return new LoginResponse()
                 .setStatus(SUCCESS)
@@ -102,8 +120,8 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    private boolean verifyPassword(String email, String password) {
-        User user = userRepository.findByEmail(email).get();
+    private boolean verifyPassword(String username, String password) {
+        User user = userRepository.findByUsername(username).get();
         return (user.getPassword().equals(password));
     }
 
