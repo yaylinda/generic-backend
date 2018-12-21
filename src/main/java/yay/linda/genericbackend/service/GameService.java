@@ -11,6 +11,7 @@ import yay.linda.genericbackend.repository.GameRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class GameService {
@@ -125,7 +126,7 @@ public class GameService {
      * @param username
      * @return
      */
-    public GameDTO endTurn(String gameId, String username) {
+    public GameDTO endTurn(String gameId, String username, boolean discardHand) {
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -141,6 +142,16 @@ public class GameService {
             isPlayer1 = false;
             opponentName = game.getPlayer1();
             game.setPlayer1sTurn(true);
+        }
+
+        if (discardHand) {
+            List<Card> newCards = IntStream.range(0, game.getNumCardsInHand()).boxed()
+                    .map(i -> drawCard(gameId, username, i))
+                    .collect(Collectors.toList());
+
+            LOGGER.info("Generated new cards for {}: {}", username, newCards);
+
+            game.getCardsMap().put(username, newCards);
         }
 
         game.updatePreviousBoard(username);

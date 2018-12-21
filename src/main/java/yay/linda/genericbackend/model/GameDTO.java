@@ -1,15 +1,16 @@
 package yay.linda.genericbackend.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameDTO {
 
     private String id;
     private String username;
     private String opponentName;
-    private ArrayList<ArrayList<Cell>> board;
-    private ArrayList<ArrayList<Cell>> previousBoard;
-    private ArrayList<Card> cards;
+    private List<List<Cell>> board;
+    private List<List<Cell>> previousBoard;
+    private List<Card> cards;
     private boolean currentTurn;
     private int points;
     private double energy;
@@ -17,6 +18,8 @@ public class GameDTO {
     private int numTurns;
     private int opponentPoints;
     private int numCardsPlayed;
+    private int numRows;
+    private int numCols;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -34,6 +37,8 @@ public class GameDTO {
         if (this.opponentName != null) {
             this.opponentPoints = game.getPointsMap().get(this.opponentName);
         }
+        this.numRows = this.board.size();
+        this.numCols = this.board.get(0).size();
     }
 
     private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
@@ -71,29 +76,29 @@ public class GameDTO {
         return this;
     }
 
-    public ArrayList<ArrayList<Cell>> getBoard() {
+    public List<List<Cell>> getBoard() {
         return board;
     }
 
-    public GameDTO setBoard(ArrayList<ArrayList<Cell>> board) {
+    public GameDTO setBoard(List<List<Cell>> board) {
         this.board = board;
         return this;
     }
 
-    public ArrayList<ArrayList<Cell>> getPreviousBoard() {
+    public List<List<Cell>> getPreviousBoard() {
         return previousBoard;
     }
 
-    public GameDTO setPreviousBoard(ArrayList<ArrayList<Cell>> previousBoard) {
+    public GameDTO setPreviousBoard(List<List<Cell>> previousBoard) {
         this.previousBoard = previousBoard;
         return this;
     }
 
-    public ArrayList<Card> getCards() {
+    public List<Card> getCards() {
         return cards;
     }
 
-    public GameDTO setCards(ArrayList<Card> cards) {
+    public GameDTO setCards(List<Card> cards) {
         this.cards = cards;
         return this;
     }
@@ -161,6 +166,24 @@ public class GameDTO {
         return this;
     }
 
+    public int getNumRows() {
+        return numRows;
+    }
+
+    public GameDTO setNumRows(int numRows) {
+        this.numRows = numRows;
+        return this;
+    }
+
+    public int getNumCols() {
+        return numCols;
+    }
+
+    public GameDTO setNumCols(int numCols) {
+        this.numCols = numCols;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "GameDTO{" +
@@ -177,6 +200,8 @@ public class GameDTO {
                 ", numTurns=" + numTurns +
                 ", opponentPoints=" + opponentPoints +
                 ", numCardsPlayed=" + numCardsPlayed +
+                ", numRows=" + numRows +
+                ", numCols=" + numCols +
                 '}';
     }
 }

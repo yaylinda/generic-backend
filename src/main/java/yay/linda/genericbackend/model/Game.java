@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import yay.linda.genericbackend.service.CardGeneratorUtil;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Game {
 
@@ -19,11 +16,11 @@ public class Game {
     private String player1;
     private String player2;
     private boolean player1sTurn;
-    private Map<String, ArrayList<ArrayList<Cell>>> boardMap;
-    private Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap;
+    private Map<String, List<List<Cell>>> boardMap;
+    private Map<String, List<List<Cell>>> previousBoardMap;
     private Map<String, Integer> pointsMap;
     private Map<String, Double> energyMap;
-    private Map<String, ArrayList<Card>> cardsMap;
+    private Map<String, List<Card>> cardsMap;
     private Map<String, Integer> numTurnsMap;
     private Map<String, Integer> numCardsPlayedMap;
     private Date createdDate;
@@ -129,7 +126,7 @@ public class Game {
      * @param username
      */
     public void updatePreviousBoard(String username) {
-        ArrayList<ArrayList<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
+        List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
         this.getPreviousBoardMap().put(username, board);
     }
 
@@ -140,7 +137,7 @@ public class Game {
      */
     public void advanceTroops(String username, String opponentName) {
         LOGGER.info("advancing troops for {}", username);
-        ArrayList<ArrayList<Cell>> board = initializeBoard(numRows, numCols);
+        List<List<Cell>> board = initializeBoard(numRows, numCols);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 Cell cell = this.getBoardMap().get(username).get(i).get(j);
@@ -205,10 +202,10 @@ public class Game {
      *
      * @return
      */
-    private ArrayList<ArrayList<Cell>> initializeBoard(int numRows, int numCols) {
-        ArrayList<ArrayList<Cell>> board = new ArrayList<>();
+    private List<List<Cell>> initializeBoard(int numRows, int numCols) {
+        List<List<Cell>> board = new ArrayList<>();
         for (int i = 0; i < numRows; i++) {
-            ArrayList<Cell> row = new ArrayList<>();
+            List<Cell> row = new ArrayList<>();
             for (int j = 0; j < numCols; j++) {
                 row.add(new Cell());
             }
@@ -222,8 +219,8 @@ public class Game {
      * @param original
      * @return
      */
-    private ArrayList<ArrayList<Cell>> transpose(ArrayList<ArrayList<Cell>> original) {
-        ArrayList<ArrayList<Cell>> transposed = new ArrayList<>();
+    private List<List<Cell>> transpose(List<List<Cell>> original) {
+        List<List<Cell>> transposed = new ArrayList<>();
         for (int i = original.size() - 1; i >=0; i--) {
             transposed.add(original.get(i));
         }
@@ -270,20 +267,20 @@ public class Game {
         return this;
     }
 
-    public Map<String, ArrayList<ArrayList<Cell>>> getBoardMap() {
+    public Map<String, List<List<Cell>>> getBoardMap() {
         return boardMap;
     }
 
-    public Game setBoardMap(Map<String, ArrayList<ArrayList<Cell>>> boardMap) {
+    public Game setBoardMap(Map<String, List<List<Cell>>> boardMap) {
         this.boardMap = boardMap;
         return this;
     }
 
-    public Map<String, ArrayList<ArrayList<Cell>>> getPreviousBoardMap() {
+    public Map<String, List<List<Cell>>> getPreviousBoardMap() {
         return previousBoardMap;
     }
 
-    public Game setPreviousBoardMap(Map<String, ArrayList<ArrayList<Cell>>> previousBoardMap) {
+    public Game setPreviousBoardMap(Map<String, List<List<Cell>>> previousBoardMap) {
         this.previousBoardMap = previousBoardMap;
         return this;
     }
@@ -306,11 +303,11 @@ public class Game {
         return this;
     }
 
-    public Map<String, ArrayList<Card>> getCardsMap() {
+    public Map<String, List<Card>> getCardsMap() {
         return cardsMap;
     }
 
-    public Game setCardsMap(Map<String, ArrayList<Card>> cardsMap) {
+    public Game setCardsMap(Map<String, List<Card>> cardsMap) {
         this.cardsMap = cardsMap;
         return this;
     }

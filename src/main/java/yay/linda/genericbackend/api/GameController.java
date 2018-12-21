@@ -50,9 +50,12 @@ public class GameController {
     }
 
     @GetMapping("/endTurn/{gameId}/{username}")
-    public ResponseEntity<?> endTurn(@PathVariable("gameId") String gameId, @PathVariable("username") String username) {
-        LOGGER.info("END TURN request: gameId={}, username={}", gameId, username);
-        return ResponseEntity.ok(gameService.endTurn(gameId, username));
+    public ResponseEntity<?> endTurn(
+            @PathVariable("gameId") String gameId,
+            @PathVariable("username") String username,
+            @RequestParam(value = "discard", defaultValue = "false") Boolean discardHand) {
+        LOGGER.info("END TURN request: gameId={}, username={}, discard={}", gameId, username, discardHand);
+        return ResponseEntity.ok(gameService.endTurn(gameId, username, discardHand));
     }
 
     @GetMapping("/card/{gameId}/{username}/{usedCardIndex}")
