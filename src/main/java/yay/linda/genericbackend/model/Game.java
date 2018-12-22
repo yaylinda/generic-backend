@@ -1,5 +1,6 @@
 package yay.linda.genericbackend.model;
 
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
@@ -7,6 +8,7 @@ import yay.linda.genericbackend.service.CardGeneratorUtil;
 
 import java.util.*;
 
+@Data
 public class Game {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
@@ -30,6 +32,7 @@ public class Game {
     private int numRows;
     private int numCols;
     private int numCardsInHand;
+    private int minTerritoryRowNum;
 
     public Game(int numRows, int numCols, int numCardsInHand) {
         this.boardMap = new HashMap<>();
@@ -43,6 +46,7 @@ public class Game {
         this.numRows = numRows;
         this.numCols = numCols;
         this.numCardsInHand = numCardsInHand;
+        this.minTerritoryRowNum = numRows - 2; // TODO: 2 rows hardcoded for now
     }
 
     /**
@@ -225,195 +229,5 @@ public class Game {
             transposed.add(original.get(i));
         }
         return transposed;
-    }
-
-    /*-------------------------------------------------------------------------
-        GETTERS / SETTERS
-     -------------------------------------------------------------------------*/
-
-    public String getId() {
-        return id;
-    }
-
-    public Game setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getPlayer1() {
-        return player1;
-    }
-
-    public Game setPlayer1(String player1) {
-        this.player1 = player1;
-        return this;
-    }
-
-    public String getPlayer2() {
-        return player2;
-    }
-
-    public Game setPlayer2(String player2) {
-        this.player2 = player2;
-        return this;
-    }
-
-    public boolean isPlayer1sTurn() {
-        return player1sTurn;
-    }
-
-    public Game setPlayer1sTurn(boolean player1sTurn) {
-        this.player1sTurn = player1sTurn;
-        return this;
-    }
-
-    public Map<String, List<List<Cell>>> getBoardMap() {
-        return boardMap;
-    }
-
-    public Game setBoardMap(Map<String, List<List<Cell>>> boardMap) {
-        this.boardMap = boardMap;
-        return this;
-    }
-
-    public Map<String, List<List<Cell>>> getPreviousBoardMap() {
-        return previousBoardMap;
-    }
-
-    public Game setPreviousBoardMap(Map<String, List<List<Cell>>> previousBoardMap) {
-        this.previousBoardMap = previousBoardMap;
-        return this;
-    }
-
-    public Map<String, Integer> getPointsMap() {
-        return pointsMap;
-    }
-
-    public Game setPointsMap(Map<String, Integer> pointsMap) {
-        this.pointsMap = pointsMap;
-        return this;
-    }
-
-    public Map<String, Double> getEnergyMap() {
-        return energyMap;
-    }
-
-    public Game setEnergyMap(Map<String, Double> energyMap) {
-        this.energyMap = energyMap;
-        return this;
-    }
-
-    public Map<String, List<Card>> getCardsMap() {
-        return cardsMap;
-    }
-
-    public Game setCardsMap(Map<String, List<Card>> cardsMap) {
-        this.cardsMap = cardsMap;
-        return this;
-    }
-
-    public Map<String, Integer> getNumTurnsMap() {
-        return numTurnsMap;
-    }
-
-    public Game setNumTurnsMap(Map<String, Integer> numTurnsMap) {
-        this.numTurnsMap = numTurnsMap;
-        return this;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public Game setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-        return this;
-    }
-
-    public Date getPlayer2JoinTime() {
-        return player2JoinTime;
-    }
-
-    public Game setPlayer2JoinTime(Date player2JoinTime) {
-        this.player2JoinTime = player2JoinTime;
-        return this;
-    }
-
-    public Date getCompletedDate() {
-        return completedDate;
-    }
-
-    public Game setCompletedDate(Date completedDate) {
-        this.completedDate = completedDate;
-        return this;
-    }
-
-    public GameStatus getStatus() {
-        return status;
-    }
-
-    public Game setStatus(GameStatus status) {
-        this.status = status;
-        return this;
-    }
-
-    public int getNumRows() {
-        return numRows;
-    }
-
-    public Game setNumRows(int numRows) {
-        this.numRows = numRows;
-        return this;
-    }
-
-    public int getNumCols() {
-        return numCols;
-    }
-
-    public Game setNumCols(int numCols) {
-        this.numCols = numCols;
-        return this;
-    }
-
-    public int getNumCardsInHand() {
-        return numCardsInHand;
-    }
-
-    public Game setNumCardsInHand(int numCardsInHand) {
-        this.numCardsInHand = numCardsInHand;
-        return this;
-    }
-
-    public Map<String, Integer> getNumCardsPlayedMap() {
-        return numCardsPlayedMap;
-    }
-
-    public Game setNumCardsPlayedMap(Map<String, Integer> numCardsPlayedMap) {
-        this.numCardsPlayedMap = numCardsPlayedMap;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "Game{" +
-                "id='" + id + '\'' +
-                ", player1='" + player1 + '\'' +
-                ", player2='" + player2 + '\'' +
-                ", player1sTurn=" + player1sTurn +
-                ", boardMap=" + boardMap +
-                ", previousBoardMap=" + previousBoardMap +
-                ", pointsMap=" + pointsMap +
-                ", energyMap=" + energyMap +
-                ", cardsMap=" + cardsMap +
-                ", numTurnsMap=" + numTurnsMap +
-                ", numCardsPlayedMap=" + numCardsPlayedMap +
-                ", createdDate=" + createdDate +
-                ", player2JoinTime=" + player2JoinTime +
-                ", completedDate=" + completedDate +
-                ", status=" + status +
-                ", numRows=" + numRows +
-                ", numCols=" + numCols +
-                ", numCardsInHand=" + numCardsInHand +
-                '}';
     }
 }

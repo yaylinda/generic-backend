@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
@@ -89,7 +90,7 @@ public class GameService {
      * @param putCardDTO
      * @return
      */
-    public GameDTO putCard(String gameId, String username, PutCardDTO putCardDTO) {
+    public PutCardResponseDTO putCard(String gameId, String username, PutCardDTO putCardDTO) {
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -105,19 +106,53 @@ public class GameService {
             opponentName = game.getPlayer1();
         }
 
-        game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
-        game.getNumCardsPlayedMap().put(username, game.getNumCardsPlayedMap().get(username) + 1);
-        game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardDTO.getCard().getCost());
-        if (game.getStatus() == GameStatus.IN_PROGRESS) {
-            int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
-            game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+        PutCardStatus putCardStatus;
+        String message = validatePutCardRequest(game, username, putCardDTO);
+
+        if (StringUtils.isEmpty(message)) {
+            LOGGER.info("PutCard request passed validation...");
+            putCardStatus = PutCardStatus.SUCCESSFUL;
+
+            game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
+            game.getNumCardsPlayedMap().put(username, game.getNumCardsPlayedMap().get(username) + 1);
+            game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardDTO.getCard().getCost());
+            if (game.getStatus() == GameStatus.IN_PROGRESS) {
+                int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
+                game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+            }
+
+            gameRepository.save(game);
+            this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, gameId);
+        } else {
+            LOGGER.info("PutCard request failed with message: '{}'", message);
+            putCardStatus = PutCardStatus.INVALID;
         }
-        game.getNumTurnsMap().put(username, game.getNumTurnsMap().get(username) + 1);
 
-        gameRepository.save(game);
 
-        this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, gameId);
-        return new GameDTO(game, isPlayer1);
+        return PutCardResponseDTO.builder()
+                .game(new GameDTO(game, isPlayer1))
+                .status(putCardStatus)
+                .message(message)
+                .build();
+    }
+
+    private String validatePutCardRequest(Game currentGame, String username, PutCardDTO request) {
+        // check enough energy
+        if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
+            return String.format(
+                    "Not enough energy [%f] to place card with cost [%f]",
+                    currentGame.getEnergyMap().get(username),
+                    request.getCard().getCost());
+        }
+        // check row col is empty
+        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getState() == CellState.OCCUPIED) {
+            return "Card must be placed in an empty Cell";
+        }
+        // check row is within limit
+        if (request.getRow() < currentGame.getMinTerritoryRowNum()) {
+            return "Card must be placed on your Territory";
+        }
+        return "";
     }
 
     /**

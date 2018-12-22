@@ -5,8 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import yay.linda.genericbackend.model.Card;
+import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.PutCardDTO;
+import yay.linda.genericbackend.model.PutCardResponseDTO;
 import yay.linda.genericbackend.service.GameService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/game")
@@ -19,14 +24,14 @@ public class GameController {
     private GameService gameService;
 
     @GetMapping("/{username}")
-    public ResponseEntity<?> getGamesByUsername(
+    public ResponseEntity<List<GameDTO>> getGamesByUsername(
             @PathVariable("username") String username) {
         LOGGER.info("GET GAMES request: username={}", username);
         return ResponseEntity.ok(gameService.getGameDTOsByUsername(username));
     }
 
     @GetMapping("/{gameId}/{username}")
-    public ResponseEntity<?> getGameById(
+    public ResponseEntity<GameDTO> getGameById(
             @PathVariable("gameId") String gameId,
             @PathVariable("username") String username) {
         LOGGER.info("GET GAME BY ID request: gameId={}, username={}", gameId, username);
@@ -34,14 +39,14 @@ public class GameController {
     }
 
     @GetMapping("/start/{username}")
-    public ResponseEntity<?> startGame(
+    public ResponseEntity<GameDTO> startGame(
             @PathVariable("username") String username) {
         LOGGER.info("START GAME request: username={}", username);
         return ResponseEntity.ok(gameService.startGame(username));
     }
 
     @PutMapping("/putCard/{gameId}/{username}")
-    public ResponseEntity<?> putCard(
+    public ResponseEntity<PutCardResponseDTO> putCard(
             @PathVariable("gameId") String gameId,
             @PathVariable("username") String username,
             @RequestBody PutCardDTO putCardDTO) {
@@ -50,7 +55,7 @@ public class GameController {
     }
 
     @GetMapping("/endTurn/{gameId}/{username}")
-    public ResponseEntity<?> endTurn(
+    public ResponseEntity<GameDTO> endTurn(
             @PathVariable("gameId") String gameId,
             @PathVariable("username") String username,
             @RequestParam(value = "discard", defaultValue = "false") Boolean discardHand) {
@@ -59,7 +64,10 @@ public class GameController {
     }
 
     @GetMapping("/card/{gameId}/{username}/{usedCardIndex}")
-    public ResponseEntity<?> drawCard(@PathVariable("gameId") String gameId, @PathVariable("username") String username, @PathVariable("usedCardIndex") int usedCardIndex) {
+    public ResponseEntity<Card> drawCard(
+            @PathVariable("gameId") String gameId,
+            @PathVariable("username") String username,
+            @PathVariable("usedCardIndex") int usedCardIndex) {
         LOGGER.info("DRAW CARD request: username={}", username);
         return ResponseEntity.ok(gameService.drawCard(gameId, username, usedCardIndex));
     }
