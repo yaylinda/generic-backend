@@ -1,8 +1,12 @@
 package yay.linda.genericbackend.model;
 
-import java.util.ArrayList;
+import lombok.Data;
+
 import java.util.List;
 
+import static yay.linda.genericbackend.service.Constants.SIMPLE_DATE_FORMAT;
+
+@Data
 public class GameDTO {
 
     private String id;
@@ -20,6 +24,10 @@ public class GameDTO {
     private int numCardsPlayed;
     private int numRows;
     private int numCols;
+    private int gameHash;
+    private String createdDate;
+    private String player2JoinDate;
+    private String completedDate;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -34,11 +42,13 @@ public class GameDTO {
         this.status = game.getStatus();
         this.numTurns = game.getNumTurnsMap().get(username);
         this.numCardsPlayed = game.getNumCardsPlayedMap().get(username);
-        if (this.opponentName != null) {
-            this.opponentPoints = game.getPointsMap().get(this.opponentName);
-        }
+        this.opponentPoints = this.opponentName != null ? game.getPointsMap().get(this.opponentName) : 0;
         this.numRows = this.board.size();
         this.numCols = this.board.get(0).size();
+        this.gameHash = game.hashCode();
+        this.createdDate = SIMPLE_DATE_FORMAT.format(game.getCreatedDate());
+        this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
+        this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
     }
 
     private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
@@ -47,161 +57,5 @@ public class GameDTO {
         } else {
             return !isPlayer1sTurn;
         }
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public GameDTO setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public GameDTO setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public String getOpponentName() {
-        return opponentName;
-    }
-
-    public GameDTO setOpponentName(String opponentName) {
-        this.opponentName = opponentName;
-        return this;
-    }
-
-    public List<List<Cell>> getBoard() {
-        return board;
-    }
-
-    public GameDTO setBoard(List<List<Cell>> board) {
-        this.board = board;
-        return this;
-    }
-
-    public List<List<Cell>> getPreviousBoard() {
-        return previousBoard;
-    }
-
-    public GameDTO setPreviousBoard(List<List<Cell>> previousBoard) {
-        this.previousBoard = previousBoard;
-        return this;
-    }
-
-    public List<Card> getCards() {
-        return cards;
-    }
-
-    public GameDTO setCards(List<Card> cards) {
-        this.cards = cards;
-        return this;
-    }
-
-    public boolean isCurrentTurn() {
-        return currentTurn;
-    }
-
-    public GameDTO setCurrentTurn(boolean currentTurn) {
-        this.currentTurn = currentTurn;
-        return this;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public GameDTO setPoints(int points) {
-        this.points = points;
-        return this;
-    }
-
-    public double getEnergy() {
-        return energy;
-    }
-
-    public GameDTO setEnergy(double energy) {
-        this.energy = energy;
-        return this;
-    }
-
-    public GameStatus getStatus() {
-        return status;
-    }
-
-    public GameDTO setStatus(GameStatus status) {
-        this.status = status;
-        return this;
-    }
-
-    public int getNumTurns() {
-        return numTurns;
-    }
-
-    public GameDTO setNumTurns(int numTurns) {
-        this.numTurns = numTurns;
-        return this;
-    }
-
-    public int getOpponentPoints() {
-        return opponentPoints;
-    }
-
-    public GameDTO setOpponentPoints(int opponentPoints) {
-        this.opponentPoints = opponentPoints;
-        return this;
-    }
-
-    public int getNumCardsPlayed() {
-        return numCardsPlayed;
-    }
-
-    public GameDTO setNumCardsPlayed(int numCardsPlayed) {
-        this.numCardsPlayed = numCardsPlayed;
-        return this;
-    }
-
-    public int getNumRows() {
-        return numRows;
-    }
-
-    public GameDTO setNumRows(int numRows) {
-        this.numRows = numRows;
-        return this;
-    }
-
-    public int getNumCols() {
-        return numCols;
-    }
-
-    public GameDTO setNumCols(int numCols) {
-        this.numCols = numCols;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "GameDTO{" +
-                "id='" + id + '\'' +
-                ", username='" + username + '\'' +
-                ", opponentName='" + opponentName + '\'' +
-                ", board=" + board +
-                ", previousBoard=" + previousBoard +
-                ", cards=" + cards +
-                ", currentTurn=" + currentTurn +
-                ", points=" + points +
-                ", energy=" + energy +
-                ", status=" + status +
-                ", numTurns=" + numTurns +
-                ", opponentPoints=" + opponentPoints +
-                ", numCardsPlayed=" + numCardsPlayed +
-                ", numRows=" + numRows +
-                ", numCols=" + numCols +
-                '}';
     }
 }

@@ -202,6 +202,7 @@ public class GameService {
 
         if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
             game.setStatus(GameStatus.COMPLETED);
+            game.setCompletedDate(new Date());
         }
 
         gameRepository.save(game);
