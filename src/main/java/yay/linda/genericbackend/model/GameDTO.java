@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 import static yay.linda.genericbackend.service.Constants.SIMPLE_DATE_FORMAT;
+import static yay.linda.genericbackend.service.Constants.md5Hash;
 
 @Data
 public class GameDTO {
@@ -24,7 +25,7 @@ public class GameDTO {
     private int numCardsPlayed;
     private int numRows;
     private int numCols;
-    private int gameHash;
+    private String md5Hash;
     private String createdDate;
     private String player2JoinDate;
     private String completedDate;
@@ -45,7 +46,7 @@ public class GameDTO {
         this.opponentPoints = this.opponentName != null ? game.getPointsMap().get(this.opponentName) : 0;
         this.numRows = this.board.size();
         this.numCols = this.board.get(0).size();
-        this.gameHash = game.hashCode();
+        this.md5Hash = md5Hash(game);
         this.createdDate = SIMPLE_DATE_FORMAT.format(game.getCreatedDate());
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
