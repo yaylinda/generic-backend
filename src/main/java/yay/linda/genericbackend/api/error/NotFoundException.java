@@ -12,4 +12,8 @@ public class NotFoundException extends RuntimeException {
     public static NotFoundException usernameNotFound(String username) {
         return new NotFoundException(String.format("Username='%s' does not exist.", username));
     }
+
+    public static NotFoundException gameNotFound(String gameId) {
+        return new NotFoundException(String.format("Game with id='%s' does not exist.", gameId));
+    }
 }

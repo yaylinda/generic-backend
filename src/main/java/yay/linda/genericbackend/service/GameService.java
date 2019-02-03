@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
@@ -36,6 +37,7 @@ public class GameService {
     public List<GameDTO> getGames(String sessionToken) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
         List<GameDTO> gameDTOs = games1.stream()
@@ -54,6 +56,7 @@ public class GameService {
     public GameDTO startGame(String sessionToken) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
         waitingGames = waitingGames.stream()
@@ -83,6 +86,7 @@ public class GameService {
     public PutCardResponseDTO putCard(String sessionToken, String gameId, PutCardDTO putCardDTO) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -130,6 +134,7 @@ public class GameService {
     public GameDTO endTurn(String sessionToken, String gameId, boolean discardHand) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -179,6 +184,7 @@ public class GameService {
 
     public GameDTO getGameById(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
@@ -186,6 +192,7 @@ public class GameService {
 
     public Card drawCard(String sessionToken, String gameId, int usedCardIndex) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
         Card newCard = CardGeneratorUtil.generateCard(username);
         LOGGER.info("Generated new card: {}", newCard);
@@ -206,20 +213,13 @@ public class GameService {
 
     private Game getGameById(String gameId) {
         Optional<Game> optionalGame = gameRepository.findById(gameId);
-        if (optionalGame.isPresent()) {
-            Game game = optionalGame.get();
-            LOGGER.info("Got game: {}", game);
-            return game;
-        } else {
-            LOGGER.warn("Could not find game matching gameId={}", gameId);
-            return null;
+        if (!optionalGame.isPresent()) {
+            throw NotFoundException.gameNotFound(gameId);
         }
+        return optionalGame.get();
     }
 
-    private String validatePutCardRequest(Game currentGame, String sessionToken, PutCardDTO request) {
-
-        String username = sessionService.getUsernameFromSessionToken(sessionToken);
-
+    private String validatePutCardRequest(Game currentGame, String username, PutCardDTO request) {
         // check enough energy
         if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
             return String.format(
