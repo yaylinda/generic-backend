@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import yay.linda.genericbackend.api.error.ErrorDTO;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.model.ResponseStatus;
 import yay.linda.genericbackend.service.UserService;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 @CrossOrigin
 public class UserController {
 
@@ -20,64 +21,29 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/{token}")
-    public ResponseEntity<UserDTO> getUserFromToken(@PathVariable("token") String token) {
-        LOGGER.info("GET USER request: token={}", token);
-        UserDTO userDTO = userService.getUserFromToken(token);
-        if (userDTO != null) {
-            return ResponseEntity.ok(userDTO);
-        } else {
-            return new ResponseEntity(
-                    new ErrorDTO(ResponseStatus.SESSION_TOKEN_NOT_FOUND, "Unable to find token=" + token),
-                    HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/{sessionToken}")
+    public ResponseEntity<UserDTO> getUserFromSessionToken(@PathVariable("sessionToken") String sessionToken) {
+        LOGGER.info("GET USER from sessionToken request: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(userService.getUserFromSessionToken(sessionToken));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<SessionTokenDTO> register(@RequestBody RegisterRequest registerRequest) {
         LOGGER.info("REGISTER request: {}", registerRequest);
-
-        RegisterResponse registerResponse = userService.register(registerRequest);
-        LOGGER.info("REGISTER response: {}", registerResponse);
-
-        if (registerResponse.getStatus() == ResponseStatus.CREATED) {
-            return ResponseEntity.ok(UserDTO.builder()
-                    .email(registerRequest.getEmail())
-                    .token(registerResponse.getToken())
-                    .username(registerRequest.getUsername())
-                    .build());
-        } else {
-            return new ResponseEntity(
-                    new ErrorDTO(registerResponse.getStatus(), registerResponse.getMessage()),
-                    HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(userService.register(registerRequest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<SessionTokenDTO> login(@RequestBody LoginRequest loginRequest) {
         LOGGER.info("LOGIN request: {}", loginRequest);
-
-        LoginResponse loginResponse = userService.login(loginRequest);
-        LOGGER.info("LOGIN response: {}", loginResponse);
-
-        if (loginResponse.getStatus() == ResponseStatus.SUCCESS) {
-            return ResponseEntity.ok(UserDTO.builder()
-                    .email(loginRequest.getEmail())
-                    .token(loginResponse.getSessionToken())
-                    .username(loginResponse.getUsername())
-                    .build());
-        } else {
-            return new ResponseEntity(
-                    new ErrorDTO(loginResponse.getStatus(), loginResponse.getMessage()),
-                    HttpStatus.UNAUTHORIZED);
-        }
+        return ResponseEntity.ok(userService.login(loginRequest));
     }
 
-    @PostMapping("/logout/{token}")
-    public ResponseEntity<?> logout(@PathVariable("token") String token) {
-        LOGGER.info("LOGOUT request: token={}", token);
-        userService.logout(token);
-        return ResponseEntity.ok().build();
+    @PostMapping("/logout/{sessionToken}")
+    public ResponseEntity<?> logout(@PathVariable("sessionToken") String sessionToken) {
+        LOGGER.info("LOGOUT request: sessionToken={}", sessionToken);
+        userService.logout(sessionToken);
+        return ResponseEntity.noContent().build();
     }
 
 }

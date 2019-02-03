@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
+import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +25,9 @@ public class GameService {
     private GameRepository gameRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private GameProperties gameProperties;
 
     @Autowired
@@ -34,6 +39,10 @@ public class GameService {
      * @return
      */
     public List<GameDTO> getGameDTOsByUsername(String username) {
+
+        if (!userRepository.findByUsername(username).isPresent()) {
+            throw new NotFoundException(username);
+        }
 
         List<GameDTO> gameDTOs = new ArrayList<>();
 

@@ -14,7 +14,7 @@ import yay.linda.genericbackend.service.GameService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/game")
+@RequestMapping("/games")
 @CrossOrigin
 public class GameController {
 
