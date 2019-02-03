@@ -4,8 +4,8 @@ import lombok.Data;
 
 import java.util.List;
 
-import static yay.linda.genericbackend.service.Constants.SIMPLE_DATE_FORMAT;
-import static yay.linda.genericbackend.service.Constants.md5Hash;
+import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
+import static yay.linda.genericbackend.model.Constants.md5Hash;
 
 @Data
 public class GameDTO {

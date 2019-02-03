@@ -1,12 +1,14 @@
 package yay.linda.genericbackend.model;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
 public class UserDTO {
     private String email;
-    private String token;
     private String username;
+
+    public UserDTO(User user) {
+        this.email = user.getEmail();
+        this.username = user.getUsername();
+    }
 }

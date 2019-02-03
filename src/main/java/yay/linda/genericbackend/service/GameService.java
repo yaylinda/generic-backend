@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.*;
 import yay.linda.genericbackend.repository.GameRepository;
-import yay.linda.genericbackend.repository.UserRepository;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -25,7 +25,7 @@ public class GameService {
     private GameRepository gameRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private SessionService sessionService;
 
     @Autowired
     private GameProperties gameProperties;
@@ -33,39 +33,27 @@ public class GameService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    /**
-     *
-     * @param username
-     * @return
-     */
-    public List<GameDTO> getGameDTOsByUsername(String username) {
+    public List<GameDTO> getGames(String sessionToken) {
 
-        if (!userRepository.findByUsername(username).isPresent()) {
-            throw new NotFoundException(username);
-        }
-
-        List<GameDTO> gameDTOs = new ArrayList<>();
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
-        gameDTOs.addAll(games1.stream().map(g ->
-                new GameDTO(g, true))
-                .collect(Collectors.toList()));
+        List<GameDTO> gameDTOs = games1.stream()
+                .map(g -> new GameDTO(g, true))
+                .collect(Collectors.toList());
 
         List<Game> games2 = gameRepository.findGamesByPlayer2(username);
-        gameDTOs.addAll(games2.stream().map(g ->
-                new GameDTO(g, false))
+        gameDTOs.addAll(games2.stream()
+                .map(g -> new GameDTO(g, false))
                 .collect(Collectors.toList()));
 
         LOGGER.info("{} has {} active games", username, gameDTOs.size());
         return gameDTOs;
     }
 
-    /**
-     *
-     * @param username
-     * @return
-     */
-    public GameDTO startGame(String username) {
+    public GameDTO startGame(String sessionToken) {
+
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
         waitingGames = waitingGames.stream()
@@ -92,14 +80,9 @@ public class GameService {
         return new GameDTO(newGame, isPlayer1);
     }
 
-    /**
-     *
-     * @param gameId
-     * @param username
-     * @param putCardDTO
-     * @return
-     */
-    public PutCardResponseDTO putCard(String gameId, String username, PutCardDTO putCardDTO) {
+    public PutCardResponseDTO putCard(String sessionToken, String gameId, PutCardDTO putCardDTO) {
+
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -137,7 +120,6 @@ public class GameService {
             putCardStatus = PutCardStatus.INVALID;
         }
 
-
         return PutCardResponseDTO.builder()
                 .game(new GameDTO(game, isPlayer1))
                 .status(putCardStatus)
@@ -145,32 +127,9 @@ public class GameService {
                 .build();
     }
 
-    private String validatePutCardRequest(Game currentGame, String username, PutCardDTO request) {
-        // check enough energy
-        if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
-            return String.format(
-                    "Not enough energy [%f] to place card with cost [%f]",
-                    currentGame.getEnergyMap().get(username),
-                    request.getCard().getCost());
-        }
-        // check row col is empty
-        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getState() == CellState.OCCUPIED) {
-            return "Card must be placed in an empty Cell";
-        }
-        // check row is within limit
-        if (request.getRow() < currentGame.getMinTerritoryRowNum()) {
-            return "Card must be placed on your Territory";
-        }
-        return "";
-    }
+    public GameDTO endTurn(String sessionToken, String gameId, boolean discardHand) {
 
-    /**
-     *
-     * @param gameId
-     * @param username
-     * @return
-     */
-    public GameDTO endTurn(String gameId, String username, boolean discardHand) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
         Game game = getGameById(gameId);
         LOGGER.info("Got game: {}", game);
@@ -190,7 +149,7 @@ public class GameService {
 
         if (discardHand) {
             List<Card> newCards = IntStream.range(0, game.getNumCardsInHand()).boxed()
-                    .map(i -> drawCard(gameId, username, i))
+                    .map(i -> drawCard(username, gameId, i))
                     .collect(Collectors.toList());
 
             LOGGER.info("Generated new cards for {}: {}", username, newCards);
@@ -218,25 +177,16 @@ public class GameService {
         return new GameDTO(game, isPlayer1);
     }
 
-    /**
-     *
-     * @param gameId
-     * @param username
-     * @return
-     */
-    public GameDTO getGameDTOByIdAndUsername(String gameId, String username) {
+    public GameDTO getGameById(String sessionToken, String gameId) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
     }
 
-    /**
-     *
-     * @param gameId
-     * @param username
-     * @param usedCardIndex
-     * @return
-     */
-    public Card drawCard(String gameId, String username, int usedCardIndex) {
+    public Card drawCard(String sessionToken, String gameId, int usedCardIndex) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+
         Card newCard = CardGeneratorUtil.generateCard(username);
         LOGGER.info("Generated new card: {}", newCard);
 
@@ -265,4 +215,28 @@ public class GameService {
             return null;
         }
     }
+
+    private String validatePutCardRequest(Game currentGame, String sessionToken, PutCardDTO request) {
+
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+
+        // check enough energy
+        if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
+            return String.format(
+                    "Not enough energy [%f] to place card with cost [%f]",
+                    currentGame.getEnergyMap().get(username),
+                    request.getCard().getCost());
+        }
+        // check row col is empty
+        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getState() == CellState.OCCUPIED) {
+            return "Card must be placed in an empty Cell";
+        }
+        // check row is within limit
+        if (request.getRow() < currentGame.getMinTerritoryRowNum()) {
+            return "Card must be placed on your Territory";
+        }
+
+        return "";
+    }
+
 }
