@@ -26,6 +26,7 @@ public class Game {
     private Map<String, Integer> numTurnsMap;
     private Map<String, Integer> numCardsPlayedMap;
     private Date createdDate;
+    private Date lastModifiedDate;
     private Date player2JoinTime;
     private Date completedDate;
     private GameStatus status;
@@ -55,6 +56,7 @@ public class Game {
      */
     public void createGameForPlayer1(String player1) {
         this.player1 = player1;
+        this.player2 = "<TBD>";
         this.player1sTurn = true;
         this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
@@ -64,6 +66,7 @@ public class Game {
         this.numCardsPlayedMap.put(player1, 0);
         this.numTurnsMap.put(player1, 0);
         this.createdDate = new Date();
+        this.lastModifiedDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
     }
 
@@ -81,6 +84,7 @@ public class Game {
         this.numCardsPlayedMap.put(player2, 0);
         this.numTurnsMap.put(player2, 0);
         this.player2JoinTime = new Date();
+        this.lastModifiedDate = new Date();
         this.status = GameStatus.IN_PROGRESS;
     }
 

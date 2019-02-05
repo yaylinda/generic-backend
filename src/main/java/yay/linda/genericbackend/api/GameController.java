@@ -5,10 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.GameDTO;
-import yay.linda.genericbackend.model.PutCardDTO;
-import yay.linda.genericbackend.model.PutCardResponseDTO;
+import yay.linda.genericbackend.model.PutCardRequest;
+import yay.linda.genericbackend.model.PutCardResponse;
 import yay.linda.genericbackend.service.GameService;
 
 import java.util.List;
@@ -23,7 +22,7 @@ public class GameController {
     @Autowired
     private GameService gameService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<List<GameDTO>> getGames(
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET GAMES request: sessionToken={}", sessionToken);
@@ -46,12 +45,12 @@ public class GameController {
     }
 
     @PutMapping("/putCard/{gameId}")
-    public ResponseEntity<PutCardResponseDTO> putCard(
+    public ResponseEntity<PutCardResponse> putCard(
             @RequestHeader("Session-Token") String sessionToken,
             @PathVariable("gameId") String gameId,
-            @RequestBody PutCardDTO putCardDTO) {
-        LOGGER.info("PUT CARD request: sessionToken={}, gameId={}, putCardDTO={}", sessionToken, gameId, putCardDTO);
-        return ResponseEntity.ok(gameService.putCard(sessionToken, gameId, putCardDTO));
+            @RequestBody PutCardRequest putCardRequest) {
+        LOGGER.info("PUT CARD request: sessionToken={}, gameId={}, putCardRequest={}", sessionToken, gameId, putCardRequest);
+        return ResponseEntity.ok(gameService.putCard(sessionToken, gameId, putCardRequest));
     }
 
     @GetMapping("/endTurn/{gameId}")
@@ -61,14 +60,5 @@ public class GameController {
             @RequestParam(value = "discard", defaultValue = "false") Boolean discardHand) {
         LOGGER.info("END TURN request: sessionToken={}, gameId={}, discard={}", sessionToken, gameId, discardHand);
         return ResponseEntity.ok(gameService.endTurn(sessionToken, gameId, discardHand));
-    }
-
-    @GetMapping("/card/{gameId}/{usedCardIndex}")
-    public ResponseEntity<Card> drawCard(
-            @RequestHeader("Session-Token") String sessionToken,
-            @PathVariable("gameId") String gameId,
-            @PathVariable("usedCardIndex") int usedCardIndex) {
-        LOGGER.info("DRAW CARD request: sessionToken={}, gameId={}, usedCardIndex={}", sessionToken, gameId, usedCardIndex);
-        return ResponseEntity.ok(gameService.drawCard(sessionToken, gameId, usedCardIndex));
     }
 }

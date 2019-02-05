@@ -83,12 +83,13 @@ public class GameService {
         return new GameDTO(newGame, isPlayer1);
     }
 
-    public PutCardResponseDTO putCard(String sessionToken, String gameId, PutCardDTO putCardDTO) {
+    public PutCardResponse putCard(String sessionToken, String gameId, PutCardRequest putCardRequest) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
 
         Game game = getGameById(gameId);
+        game.setLastModifiedDate(new Date());
         LOGGER.info("Got game: {}", game);
 
         boolean isPlayer1;
@@ -103,19 +104,21 @@ public class GameService {
         }
 
         PutCardStatus putCardStatus;
-        String message = validatePutCardRequest(game, username, putCardDTO);
+        String message = validatePutCardRequest(game, username, putCardRequest);
 
         if (StringUtils.isEmpty(message)) {
             LOGGER.info("PutCard request passed validation...");
             putCardStatus = PutCardStatus.SUCCESSFUL;
 
-            game.putCardOnBoard(username, putCardDTO.getRow(), putCardDTO.getCol(), putCardDTO.getCard());
+            game.putCardOnBoard(username, putCardRequest.getRow(), putCardRequest.getCol(), putCardRequest.getCard());
             game.getNumCardsPlayedMap().put(username, game.getNumCardsPlayedMap().get(username) + 1);
-            game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardDTO.getCard().getCost());
+            game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardRequest.getCard().getCost());
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
-                int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardDTO.getRow();
-                game.putCardOnBoard(opponentName, opponentRow, putCardDTO.getCol(), putCardDTO.getCard());
+                int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardRequest.getRow();
+                game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
             }
+
+            drawCard(username, game, putCardRequest.getCardIndex());
 
             gameRepository.save(game);
             this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, gameId);
@@ -124,7 +127,7 @@ public class GameService {
             putCardStatus = PutCardStatus.INVALID;
         }
 
-        return PutCardResponseDTO.builder()
+        return PutCardResponse.builder()
                 .game(new GameDTO(game, isPlayer1))
                 .status(putCardStatus)
                 .message(message)
@@ -137,6 +140,7 @@ public class GameService {
         LOGGER.info("Obtained username={} from sessionToken", username);
 
         Game game = getGameById(gameId);
+        game.setLastModifiedDate(new Date());
         LOGGER.info("Got game: {}", game);
 
         boolean isPlayer1;
@@ -153,13 +157,7 @@ public class GameService {
         }
 
         if (discardHand) {
-            List<Card> newCards = IntStream.range(0, game.getNumCardsInHand()).boxed()
-                    .map(i -> drawCard(username, gameId, i))
-                    .collect(Collectors.toList());
-
-            LOGGER.info("Generated new cards for {}: {}", username, newCards);
-
-            game.getCardsMap().put(username, newCards);
+            IntStream.range(0, game.getNumCardsInHand()).boxed().forEach(i -> drawCard(username, game, i));
         }
 
         game.updatePreviousBoard(username);
@@ -190,23 +188,6 @@ public class GameService {
         return new GameDTO(game, game.getPlayer1().equals(username));
     }
 
-    public Card drawCard(String sessionToken, String gameId, int usedCardIndex) {
-        String username = sessionService.getUsernameFromSessionToken(sessionToken);
-        LOGGER.info("Obtained username={} from sessionToken", username);
-
-        Card newCard = CardGeneratorUtil.generateCard(username);
-        LOGGER.info("Generated new card: {}", newCard);
-
-        Game game = getGameById(gameId);
-        LOGGER.info("Got game: {}", game);
-
-        game.getCardsMap().get(username).set(usedCardIndex, newCard);
-
-        gameRepository.save(game);
-
-        return newCard;
-    }
-
     /*-------------------------------------------------------------------------
         PRIVATE HELPER METHODS
      -------------------------------------------------------------------------*/
@@ -219,7 +200,7 @@ public class GameService {
         return optionalGame.get();
     }
 
-    private String validatePutCardRequest(Game currentGame, String username, PutCardDTO request) {
+    private String validatePutCardRequest(Game currentGame, String username, PutCardRequest request) {
         // check enough energy
         if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
             return String.format(
@@ -237,6 +218,12 @@ public class GameService {
         }
 
         return "";
+    }
+
+    private void drawCard(String username, Game game, int cardIndex) {
+        Card newCard = CardGeneratorUtil.generateCard(username);
+        LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
+        game.getCardsMap().get(username).set(cardIndex, newCard);
     }
 
 }

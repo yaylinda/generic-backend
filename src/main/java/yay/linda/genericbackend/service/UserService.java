@@ -31,10 +31,13 @@ public class UserService {
             throw NotFoundException.usernameNotFound(username);
         }
 
-        return new UserDTO(optionalUser.get());
+        return UserDTO.builder()
+                .username(optionalUser.get().getUsername())
+                .sessionToken(sessionToken)
+                .build();
     }
 
-    public SessionTokenDTO register(RegisterRequest registerRequest) {
+    public UserDTO register(RegisterRequest registerRequest) {
 
         if (usernameExists(registerRequest.getUsername())) {
             throw RegisterException.usernameTaken(registerRequest.getUsername());
@@ -48,10 +51,13 @@ public class UserService {
 
         Session session = sessionService.createSession(registerRequest.getUsername());
 
-        return new SessionTokenDTO(session.getSessionToken());
+        return UserDTO.builder()
+                .username(registerRequest.getUsername())
+                .sessionToken(session.getSessionToken())
+                .build();
     }
 
-    public SessionTokenDTO login(LoginRequest loginRequest) {
+    public UserDTO login(LoginRequest loginRequest) {
 
         if (!usernameExists(loginRequest.getUsername())) {
             throw NotFoundException.usernameNotFound(loginRequest.getUsername());
@@ -63,7 +69,10 @@ public class UserService {
 
         Session session = sessionService.createSession(loginRequest.getUsername());
 
-        return new SessionTokenDTO(session.getSessionToken());
+        return UserDTO.builder()
+                .username(loginRequest.getUsername())
+                .sessionToken(session.getSessionToken())
+                .build();
     }
 
     public void logout(String sessionToken) {

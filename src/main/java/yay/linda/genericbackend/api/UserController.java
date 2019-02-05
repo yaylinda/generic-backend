@@ -28,13 +28,13 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<SessionTokenDTO> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
         LOGGER.info("REGISTER request: {}", registerRequest);
         return new ResponseEntity<>(userService.register(registerRequest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<SessionTokenDTO> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<UserDTO> login(@RequestBody LoginRequest loginRequest) {
         LOGGER.info("LOGIN request: {}", loginRequest);
         return ResponseEntity.ok(userService.login(loginRequest));
     }

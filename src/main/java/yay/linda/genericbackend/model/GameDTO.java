@@ -27,6 +27,7 @@ public class GameDTO {
     private int numCols;
     private String md5Hash;
     private String createdDate;
+    private String lastModifiedDate;
     private String player2JoinDate;
     private String completedDate;
 
@@ -43,11 +44,12 @@ public class GameDTO {
         this.status = game.getStatus();
         this.numTurns = game.getNumTurnsMap().get(username);
         this.numCardsPlayed = game.getNumCardsPlayedMap().get(username);
-        this.opponentPoints = this.opponentName != null ? game.getPointsMap().get(this.opponentName) : 0;
+        this.opponentPoints = !this.opponentName.equals("<TBD>") ? game.getPointsMap().get(this.opponentName) : 0;
         this.numRows = this.board.size();
         this.numCols = this.board.get(0).size();
         this.md5Hash = md5Hash(game);
         this.createdDate = SIMPLE_DATE_FORMAT.format(game.getCreatedDate());
+        this.lastModifiedDate = SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate());
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
     }
