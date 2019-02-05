@@ -204,7 +204,7 @@ public class GameService {
         // check enough energy
         if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
             return String.format(
-                    "Not enough energy [%f] to place card with cost [%f]",
+                    "Not enough energy [%.1f] to place card with cost [%.1f]",
                     currentGame.getEnergyMap().get(username),
                     request.getCard().getCost());
         }
