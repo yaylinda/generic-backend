@@ -1,4 +1,60 @@
-sudo yum update
-sudo yum install git
+sudo su
+
+sudo yum update -y
+
+sudo yum install -y git
+
 git clone https://github.com/yaylinda/generic-backend.git
+git clone https://github.com/yaylinda/generic-frontend.git
+
+sudo sh -c "echo '[mongodb-org-4.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/4.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc' > /etc/yum.repos.d/mongodb-org-4.0.repo"
+
 sudo yum install -y mongodb-org
+
+sudo yum install -y java-1.8.0-openjdk-devel
+
+sudo yum install -y wget
+
+sudo wget http://mirrors.gigenet.com/apache/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz
+
+sudo tar -xvf apache-maven-3.6.0-bin.tar.gz
+
+export PATH=/home/ec2-user/apache-maven-3.6.0/bin:$PATH
+
+rm -rf apache-maven-3.6.0-bin.tar.gz
+
+sudo wget http://nodejs.org/dist/latest/node-v11.9.0-linux-x64.tar.xz
+
+export PATH=/home/ec2-user/node-v11.9.0-linux-x64/bin:$PATH
+
+rm -rf node-v11.9.0-linux-x64.tar.xz
+
+npm install -g npm
+
+sudo service mongod start
+
+cd /home/ec2-user/generic-backend
+
+mvn clean install
+
+mvn spring-boot:run &
+
+cd /home/ec2-user/generic-frontend
+
+npm install
+
+npm install -g @angular/cli
+
+ng serve --host 0.0.0.0
+
+
+
+
+
+
+
