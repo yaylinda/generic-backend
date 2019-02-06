@@ -32,7 +32,7 @@ sudo wget http://nodejs.org/dist/latest/node-v11.9.0-linux-x64.tar.xz
 
 export PATH=/home/ec2-user/node-v11.9.0-linux-x64/bin:$PATH
 
-rm -rf node-v11.9.0-linux-x64.tar.xz
+rm -rf node-v11.9.0-linux-x64.tar.gz
 
 npm install -g npm
 
@@ -42,7 +42,7 @@ cd /home/ec2-user/generic-backend
 
 mvn clean install
 
-mvn spring-boot:run &
+mvn spring-boot:run
 
 cd /home/ec2-user/generic-frontend
 
