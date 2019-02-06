@@ -50,11 +50,6 @@ npm install
 
 npm install -g @angular/cli
 
-ng serve --host 0.0.0.0
+npm i --save-exact --save terser@3.16.1
 
-
-
-
-
-
-
+ng serve --host 0.0.0.0 -c dev
