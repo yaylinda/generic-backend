@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import yay.linda.genericbackend.api.error.ErrorDTO;
-import yay.linda.genericbackend.model.*;
-import yay.linda.genericbackend.model.ResponseStatus;
+import yay.linda.genericbackend.model.LoginRequest;
+import yay.linda.genericbackend.model.RegisterRequest;
+import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.service.UserService;
 
 @RestController

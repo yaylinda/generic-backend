@@ -7,11 +7,8 @@ import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.api.error.SessionExpiredException;
 import yay.linda.genericbackend.model.Session;
-import yay.linda.genericbackend.model.User;
-import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.repository.SessionRepository;
 
-import java.util.Date;
 import java.util.Optional;
 
 @Service
