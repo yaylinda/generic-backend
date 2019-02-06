@@ -36,13 +36,9 @@ rm -rf node-v11.9.0-linux-x64.tar.gz
 
 npm install -g npm
 
-sudo service mongod start
-
 cd /home/ec2-user/generic-backend
 
 mvn clean install
-
-mvn spring-boot:run
 
 cd /home/ec2-user/generic-frontend
 
@@ -52,4 +48,12 @@ npm install -g @angular/cli
 
 npm i --save-exact --save terser@3.16.1
 
-ng serve --host 0.0.0.0 -c dev
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app.service
+
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app.sh
+
+sudo cp /home/ec2-user/generic-backend/scripts/start-app.service /etc/systemd/system/start-app.service
+
+sudo systemctl start start-app
+
+sudo systemctl enable start-app
