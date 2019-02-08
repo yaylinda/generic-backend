@@ -25,7 +25,7 @@ public class GameController {
     @GetMapping("")
     public ResponseEntity<List<GameDTO>> getGames(
             @RequestHeader("Session-Token") String sessionToken) {
-        LOGGER.info("GET GAMES request: sessionToken={}", sessionToken);
+        LOGGER.info("GET GAMES: sessionToken={}", sessionToken);
         return ResponseEntity.ok(gameService.getGames(sessionToken));
     }
 
@@ -33,15 +33,30 @@ public class GameController {
     public ResponseEntity<GameDTO> getGameById(
             @RequestHeader("Session-Token") String sessionToken,
             @PathVariable("gameId") String gameId) {
-        LOGGER.info("GET GAME BY ID request: sessionToken={}, gameId={}", sessionToken, gameId);
+        LOGGER.info("GET GAME BY ID: sessionToken={}, gameId={}", sessionToken, gameId);
         return ResponseEntity.ok(gameService.getGameById(sessionToken, gameId));
     }
 
-    @GetMapping("/start")
-    public ResponseEntity<GameDTO> startGame(
+    @GetMapping("/joinable")
+    public ResponseEntity<List<GameDTO>> getJoinableGames(
             @RequestHeader("Session-Token") String sessionToken) {
-        LOGGER.info("START GAME request: sessionToken={}", sessionToken);
-        return ResponseEntity.ok(gameService.startGame(sessionToken));
+        LOGGER.info("GET JOINABLE GAMES: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(gameService.getJoinableGames(sessionToken));
+    }
+
+    @GetMapping("/join")
+    public ResponseEntity<GameDTO> joinGame(
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestParam("gameId") String gameId) {
+        LOGGER.info("JOIN GAME: sessionToken={}, gameId={}", sessionToken, gameId);
+        return ResponseEntity.ok(gameService.joinGame(sessionToken, gameId));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<GameDTO> createGame(
+            @RequestHeader("Session-Token") String sessionToken) {
+        LOGGER.info("CREATE GAME: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(gameService.createGame(sessionToken));
     }
 
     @PutMapping("/putCard/{gameId}")
@@ -49,7 +64,7 @@ public class GameController {
             @RequestHeader("Session-Token") String sessionToken,
             @PathVariable("gameId") String gameId,
             @RequestBody PutCardRequest putCardRequest) {
-        LOGGER.info("PUT CARD request: sessionToken={}, gameId={}, putCardRequest={}", sessionToken, gameId, putCardRequest);
+        LOGGER.info("PUT CARD: sessionToken={}, gameId={}, putCardRequest={}", sessionToken, gameId, putCardRequest);
         return ResponseEntity.ok(gameService.putCard(sessionToken, gameId, putCardRequest));
     }
 
@@ -58,7 +73,7 @@ public class GameController {
             @RequestHeader("Session-Token") String sessionToken,
             @PathVariable("gameId") String gameId,
             @RequestParam(value = "discard", defaultValue = "false") Boolean discardHand) {
-        LOGGER.info("END TURN request: sessionToken={}, gameId={}, discard={}", sessionToken, gameId, discardHand);
+        LOGGER.info("END TURN: sessionToken={}, gameId={}, discard={}", sessionToken, gameId, discardHand);
         return ResponseEntity.ok(gameService.endTurn(sessionToken, gameId, discardHand));
     }
 }

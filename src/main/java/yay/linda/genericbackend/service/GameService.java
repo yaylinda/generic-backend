@@ -53,34 +53,58 @@ public class GameService {
         return gameDTOs;
     }
 
-    public GameDTO startGame(String sessionToken) {
-
+    public GameDTO getGameById(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
 
-        List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name());
-        waitingGames = waitingGames.stream()
-                .filter(g -> !g.getPlayer1().equals(username))
+        Game game = getGameById(gameId);
+        return new GameDTO(game, game.getPlayer1().equals(username));
+    }
+
+    public List<GameDTO> getJoinableGames(String sessionToken) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+
+        return getWaitingGames(username).stream()
+                .map(g -> new GameDTO(g, false))
                 .collect(Collectors.toList());
+    }
 
-        Game newGame;
-        boolean isPlayer1;
+    public GameDTO joinGame(String sessionToken, String gameId) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
 
-        if (waitingGames.size() == 0) {
-            newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
-            newGame.createGameForPlayer1(username);
-            isPlayer1 = true;
-            LOGGER.info("No waiting games... created new one: {}", newGame);
+        Game gameToJoin;
+        if (StringUtils.isEmpty(gameId)) {
+            List<Game> waitingGames = getWaitingGames(username);
+            if (waitingGames.isEmpty()) {
+                throw new NotFoundException("There are no waiting games to join");
+            }
+            gameToJoin = waitingGames.get(0);
         } else {
-            newGame = waitingGames.get(0);
-            newGame.addPlayer2ToGame(username);
-            isPlayer1 = false;
-            this.messagingTemplate.convertAndSend("/topic/player2Joined/" + newGame.getPlayer1(), newGame.getId());
-            LOGGER.info("Found waiting game... joined: {}", newGame);
+            gameToJoin = getGameById(gameId);
         }
 
+        gameToJoin.addPlayer2ToGame(username);
+
+        this.messagingTemplate.convertAndSend("/topic/player2Joined/" + gameToJoin.getPlayer1(), gameToJoin.getId());
+
+        gameRepository.save(gameToJoin);
+        return new GameDTO(gameToJoin, false);
+    }
+
+    public GameDTO createGame(String sessionToken) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+
+        Game newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
+
+        newGame.createGameForPlayer1(username);
+
+        this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
+
         gameRepository.save(newGame);
-        return new GameDTO(newGame, isPlayer1);
+        return new GameDTO(newGame, true);
     }
 
     public PutCardResponse putCard(String sessionToken, String gameId, PutCardRequest putCardRequest) {
@@ -180,14 +204,6 @@ public class GameService {
         return new GameDTO(game, isPlayer1);
     }
 
-    public GameDTO getGameById(String sessionToken, String gameId) {
-        String username = sessionService.getUsernameFromSessionToken(sessionToken);
-        LOGGER.info("Obtained username={} from sessionToken", username);
-
-        Game game = getGameById(gameId);
-        return new GameDTO(game, game.getPlayer1().equals(username));
-    }
-
     /*-------------------------------------------------------------------------
         PRIVATE HELPER METHODS
      -------------------------------------------------------------------------*/
@@ -198,6 +214,15 @@ public class GameService {
             throw NotFoundException.gameNotFound(gameId);
         }
         return optionalGame.get();
+    }
+
+    private List<Game> getWaitingGames(String username) {
+        List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name())
+                .stream()
+                .filter(g -> !g.getPlayer1().equals(username))
+                .collect(Collectors.toList());
+        LOGGER.info("Obtained {} waiting games (not created by {})", waitingGames.size(), username);
+        return waitingGames;
     }
 
     private String validatePutCardRequest(Game currentGame, String username, PutCardRequest request) {
@@ -225,5 +250,4 @@ public class GameService {
         LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
         game.getCardsMap().get(username).set(cardIndex, newCard);
     }
-
 }
