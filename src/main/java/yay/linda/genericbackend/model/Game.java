@@ -43,6 +43,7 @@ public class Game {
 
     public Game(int numRows, int numCols, int numCardsInHand) {
         this.boardMap = new HashMap<>();
+        this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
@@ -65,6 +66,7 @@ public class Game {
         this.player2 = "<TBD>";
         this.player1sTurn = true;
         this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
+        this.transitionBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
@@ -83,6 +85,7 @@ public class Game {
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
         this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
+        this.transitionBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
@@ -175,13 +178,13 @@ public class Game {
         this.getTransitionBoardMap().put(username, board);
     }
 
-    public void updateCurrentBoard(String username) {
+    public void updateCurrentBoard(String username, String opponentName) {
         List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 Cell cell = board.get(i).get(j);
                 if (cell.getCards().size() > 1) {
-                    cell.handleClash();
+                    cell.handleClash(username, opponentName);
                 }
             }
         }

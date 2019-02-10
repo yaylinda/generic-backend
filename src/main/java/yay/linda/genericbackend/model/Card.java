@@ -1,10 +1,12 @@
 package yay.linda.genericbackend.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class Card implements Comparable<Card> {
 
     private String id;
@@ -15,6 +17,10 @@ public class Card implements Comparable<Card> {
     private String owner;
     private String specialAbility; // TODO v2
     private Integer numTurnsOnBoard;
+
+    public Card() {
+        this.numTurnsOnBoard = 0;
+    }
 
     public void incrementNumTurnsOnBoard(String username) {
         if (this.owner.equals(username)) {

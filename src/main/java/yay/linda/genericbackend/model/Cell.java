@@ -42,13 +42,12 @@ public class Cell {
         this.idToCardMap.remove(card.getId());
     }
 
-    public void handleClash() {
+    public void handleClash(String playerA, String playerB) {
         // partition
         Map<String, List<Card>> usernameToCardMap = new HashMap<>();
+        usernameToCardMap.put(playerA, new ArrayList<>());
+        usernameToCardMap.put(playerB, new ArrayList<>());
         this.idToCardMap.values().forEach(c -> {
-            if (!usernameToCardMap.containsKey(c.getOwner())) {
-                usernameToCardMap.put(c.getOwner(), new ArrayList<>());
-            }
             usernameToCardMap.get(c.getOwner()).add(c);
         });
 
@@ -60,9 +59,6 @@ public class Cell {
             Map<String, Card> fighters = new HashMap<>();
             usernameToCardMap.forEach((k, v) -> fighters.put(k, v.get(0)));
 
-            List<String> usernames = new ArrayList<>(fighters.keySet());
-            String playerA = usernames.get(0);
-            String playerB = usernames.get(1);
             Card cardA = fighters.get(playerA);
             Card cardB = fighters.get(playerB);
 
