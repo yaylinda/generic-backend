@@ -66,7 +66,7 @@ public class GameService {
         LOGGER.info("Obtained username={} from sessionToken", username);
 
         return getWaitingGames(username).stream()
-                .map(g -> GameDTO.gameDTOForJoinableList(g.getId(), g.getPlayer1(), g.getCreatedDate()))
+                .map(GameDTO::gameDTOForJoinableList)
                 .collect(Collectors.toList());
     }
 

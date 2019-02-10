@@ -58,15 +58,16 @@ public class GameDTO {
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
     }
 
-    public static GameDTO gameDTOForJoinableList(String id, String opponentName, Date createdDate) {
+    public static GameDTO gameDTOForJoinableList(Game game) {
         GameDTO gameDTO = new GameDTO();
-        gameDTO.setId(id);
-        gameDTO.setOpponentName(opponentName);
-        gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(createdDate));
+        gameDTO.setId(game.getId());
+        gameDTO.setOpponentName(game.getPlayer1());
+        gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(game.getCreatedDate()));
+        gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.isPlayer1sTurn())); // if player1 has ended turn after creating the game
         return gameDTO;
     }
 
-    private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
+    private static boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
         if (isPlayer1) {
             return isPlayer1sTurn;
         } else {
