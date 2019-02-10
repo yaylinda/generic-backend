@@ -34,6 +34,7 @@ public class Game {
     private int numCols;
     private int numCardsInHand;
     private int minTerritoryRowNum;
+    private String winner;
 
     public Game(int numRows, int numCols, int numCardsInHand) {
         this.boardMap = new HashMap<>();
@@ -98,7 +99,6 @@ public class Game {
     public void putCardOnBoard(String username, int row, int col, Card card) {
         this.previousBoardMap.put(username, new ArrayList<>(this.boardMap.get(username)));
         this.boardMap.get(username).get(row).get(col).setCard(card);
-        this.boardMap.get(username).get(row).get(col).setState(CellState.OCCUPIED);
     }
 
     /**

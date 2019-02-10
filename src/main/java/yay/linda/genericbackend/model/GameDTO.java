@@ -1,13 +1,16 @@
 package yay.linda.genericbackend.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
 import static yay.linda.genericbackend.model.Constants.md5Hash;
 
 @Data
+@NoArgsConstructor
 public class GameDTO {
 
     private String id;
@@ -30,6 +33,7 @@ public class GameDTO {
     private String lastModifiedDate;
     private String player2JoinDate;
     private String completedDate;
+    private String winner;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -52,6 +56,14 @@ public class GameDTO {
         this.lastModifiedDate = SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate());
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
+    }
+
+    public static GameDTO gameDTOForJoinableList(String id, String opponentName, Date createdDate) {
+        GameDTO gameDTO = new GameDTO();
+        gameDTO.setId(id);
+        gameDTO.setOpponentName(opponentName);
+        gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(createdDate));
+        return gameDTO;
     }
 
     private boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {

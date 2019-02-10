@@ -66,7 +66,7 @@ public class GameService {
         LOGGER.info("Obtained username={} from sessionToken", username);
 
         return getWaitingGames(username).stream()
-                .map(g -> new GameDTO(g, false))
+                .map(g -> GameDTO.gameDTOForJoinableList(g.getId(), g.getPlayer1(), g.getCreatedDate()))
                 .collect(Collectors.toList());
     }
 
@@ -198,6 +198,7 @@ public class GameService {
         if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
             game.setStatus(GameStatus.COMPLETED);
             game.setCompletedDate(new Date());
+            game.setWinner(username);
         }
 
         gameRepository.save(game);
@@ -234,7 +235,7 @@ public class GameService {
                     request.getCard().getCost());
         }
         // check row col is empty
-        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getState() == CellState.OCCUPIED) {
+        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCard() != null) {
             return "Card must be placed in an empty Cell";
         }
         // check row is within limit
