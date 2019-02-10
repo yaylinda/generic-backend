@@ -7,7 +7,11 @@ import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.api.error.RegisterException;
 import yay.linda.genericbackend.api.error.UsernamePasswordMismatchException;
-import yay.linda.genericbackend.model.*;
+import yay.linda.genericbackend.model.LoginRequest;
+import yay.linda.genericbackend.model.RegisterRequest;
+import yay.linda.genericbackend.model.Session;
+import yay.linda.genericbackend.model.User;
+import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.Optional;

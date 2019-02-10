@@ -8,7 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
-import yay.linda.genericbackend.model.*;
+import yay.linda.genericbackend.model.Card;
+import yay.linda.genericbackend.model.Game;
+import yay.linda.genericbackend.model.GameDTO;
+import yay.linda.genericbackend.model.GameStatus;
+import yay.linda.genericbackend.model.PutCardRequest;
+import yay.linda.genericbackend.model.PutCardResponse;
+import yay.linda.genericbackend.model.PutCardStatus;
 import yay.linda.genericbackend.repository.GameRepository;
 
 import java.util.Date;
@@ -135,8 +141,8 @@ public class GameService {
             putCardStatus = PutCardStatus.SUCCESSFUL;
 
             game.putCardOnBoard(username, putCardRequest.getRow(), putCardRequest.getCol(), putCardRequest.getCard());
-            game.getNumCardsPlayedMap().put(username, game.getNumCardsPlayedMap().get(username) + 1);
-            game.getEnergyMap().put(username, game.getEnergyMap().get(username) - putCardRequest.getCard().getCost());
+            game.incrementNumCardsPlayed(username);
+            game.decrementEnergyForPutCard(username, putCardRequest.getCard().getCost());
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
                 int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardRequest.getRow();
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
@@ -181,13 +187,15 @@ public class GameService {
         }
 
         if (discardHand) {
-            IntStream.range(0, game.getNumCardsInHand()).boxed().forEach(i -> drawCard(username, game, i));
+            IntStream.range(0, game.getNumCardsInHand()).boxed()
+                    .forEach(i -> drawCard(username, game, i));
         }
 
         game.updatePreviousBoard(username);
-        game.advanceTroops(username, opponentName);
+        game.updateTransitionalBoard(username);
+        game.updateCurrentBoard(username, opponentName);
         game.incrementNumTurns(username);
-        game.incrementEnergy(username);
+        game.incrementEnergyForEndTurn(username);
 
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.updatePreviousBoard(opponentName);
@@ -235,7 +243,7 @@ public class GameService {
                     request.getCard().getCost());
         }
         // check row col is empty
-        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCard() != null) {
+        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
             return "Card must be placed in an empty Cell";
         }
         // check row is within limit

@@ -1,92 +1,30 @@
 package yay.linda.genericbackend.model;
 
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class Card {
 
+    private String id;
     private CardType type;
-    private int might;
-    private int movement;
-    private double cost;
+    private Integer might;
+    private Integer movement;
+    private Double cost;
     private String owner;
     private String specialAbility; // TODO v2
-    private int numTurnsOnBoard;
+    private Integer numTurnsOnBoard;
 
-    public Card() {
-        this.numTurnsOnBoard = 0;
+    public void incrementNumTurnsOnBoard(String username) {
+        if (this.owner.equals(username)) {
+            this.numTurnsOnBoard += 1;
+        }
     }
 
-    public CardType getType() {
-        return type;
-    }
-
-    public Card setType(CardType type) {
-        this.type = type;
-        return this;
-    }
-
-    public int getMight() {
-        return might;
-    }
-
-    public Card setMight(int might) {
-        this.might = might;
-        return this;
-    }
-
-    public int getMovement() {
-        return movement;
-    }
-
-    public Card setMovement(int movement) {
-        this.movement = movement;
-        return this;
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public Card setCost(double cost) {
-        this.cost = cost;
-        return this;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public Card setOwner(String owner) {
-        this.owner = owner;
-        return this;
-    }
-
-    public String getSpecialAbility() {
-        return specialAbility;
-    }
-
-    public Card setSpecialAbility(String specialAbility) {
-        this.specialAbility = specialAbility;
-        return this;
-    }
-
-    public int getNumTurnsOnBoard() {
-        return numTurnsOnBoard;
-    }
-
-    public Card setNumTurnsOnBoard(int numTurnsOnBoard) {
-        this.numTurnsOnBoard = numTurnsOnBoard;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "Card{" +
-                "type=" + type +
-                ", might=" + might +
-                ", movement=" + movement +
-                ", cost=" + cost +
-                ", owner='" + owner + '\'' +
-                ", specialAbility='" + specialAbility + '\'' +
-                ", numTurnsOnBoard=" + numTurnsOnBoard +
-                '}';
+    public boolean isQualifiedToAdvance(String username) {
+        return this.getType() == CardType.TROOP
+                && this.owner.equals(username)
+                && this.getNumTurnsOnBoard() > 0;
     }
 }

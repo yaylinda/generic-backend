@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class PutCardRequest {
-    private int row;
-    private int col;
-    private int cardIndex;
+    private Integer row;
+    private Integer col;
+    private Integer cardIndex;
     private Card card;
 }
