@@ -41,7 +41,7 @@ public class GameDTO {
         this.username = isPlayer1 ? game.getPlayer1() : game.getPlayer2();
         this.opponentName = isPlayer1 ? game.getPlayer2() : game.getPlayer1();
         this.board = convertBoardToCellDTO(game.getBoardMap().get(username));
-        this.transitionBoard = convertBoardToCellDTO(game.getBoardMap().get(username));
+        this.transitionBoard = convertBoardToCellDTO(game.getTransitionBoardMap().get(username));
         this.previousBoard = convertBoardToCellDTO(game.getPreviousBoardMap().get(username));
         this.cards = game.getCardsMap().get(username);
         this.currentTurn = calculateCurrentTurn(isPlayer1, game.getPlayer1sTurn());
@@ -58,6 +58,7 @@ public class GameDTO {
         this.lastModifiedDate = SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate());
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
+        this.winner = game.getWinner();
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {

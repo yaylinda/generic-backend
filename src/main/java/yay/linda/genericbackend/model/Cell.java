@@ -44,9 +44,7 @@ public class Cell {
         Map<String, List<Card>> usernameToCardMap = new HashMap<>();
         usernameToCardMap.put(playerA, new ArrayList<>());
         usernameToCardMap.put(playerB, new ArrayList<>());
-        this.idToCardMap.values().forEach(c -> {
-            usernameToCardMap.get(c.getOwner()).add(c);
-        });
+        this.idToCardMap.values().forEach(c -> usernameToCardMap.get(c.getOwner()).add(c));
 
         // sort
         usernameToCardMap.values().forEach(Collections::sort);
@@ -73,13 +71,9 @@ public class Cell {
             }
         }
 
-        // put winners back in cell
-        usernameToCardMap.forEach((k, v) -> {
-            if (!v.isEmpty()) {
-                this.idToCardMap.clear();
-                v.forEach(c -> this.idToCardMap.put(c.getId(), c));
-            }
-        });
+        // put cards back in cell
+        this.idToCardMap.clear();
+        usernameToCardMap.forEach((k, v) -> v.forEach(c -> this.idToCardMap.put(c.getId(), c)));
     }
 
     private boolean isOpponentAlive(Map<String, List<Card>> teams) {

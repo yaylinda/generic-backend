@@ -191,15 +191,14 @@ public class GameService {
                     .forEach(i -> drawCard(username, game, i));
         }
 
-        game.updatePreviousBoard(username);
-        game.updateTransitionalBoard(username);
-        game.updateCurrentBoard(username, opponentName);
+        game.updatePreviousBoard(username); // sets current board state to previous board state
+        game.updateTransitionalBoard(username); // moves all "my" troops forward
+        game.updateCurrentBoard(username, opponentName); // performs clash on cells with multiple cards
         game.incrementNumTurns(username);
         game.incrementEnergyForEndTurn(username);
 
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
-            game.updatePreviousBoard(opponentName);
-            game.advanceTroopsForOpponent(username, opponentName);
+            game.updateOpponentBoard(username, opponentName);
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
         }
 

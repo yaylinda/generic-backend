@@ -114,13 +114,7 @@ public class Game {
      * @param username
      */
     public void incrementEnergyForEndTurn(String username) {
-        double baseEnergy;
-        if (username.equals(this.player1)) {
-            baseEnergy = 1;
-        } else {
-            baseEnergy = 2;
-        }
-        this.getEnergyMap().put(username, Math.min(baseEnergy + this.getNumTurnsMap().get(username), 10));
+        this.getEnergyMap().put(username, Math.min(1.0 + this.getNumTurnsMap().get(username), 10));
     }
 
     public void decrementEnergyForPutCard(String username, Double cost) {
@@ -148,6 +142,7 @@ public class Game {
      */
     public void updatePreviousBoard(String username) {
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
+        LOGGER.info("updating previous board for {} to {}", username, board);
         this.getPreviousBoardMap().put(username, board);
     }
 
@@ -168,8 +163,8 @@ public class Game {
                         } else {
                             Cell cellAtNewRow = board.get(newRow).get(j);
                             cellAtNewRow.addCard(card);
-                            cell.removeCard(card);
                         }
+                        cell.removeCard(card);
                     }
                 }
             }
@@ -197,8 +192,10 @@ public class Game {
      * @param username
      * @param opponentName
      */
-    public void advanceTroopsForOpponent(String username, String opponentName) {
-        this.getBoardMap().put(opponentName, this.transpose(this.getBoardMap().get(username)));
+    public void updateOpponentBoard(String username, String opponentName) {
+        this.previousBoardMap.put(opponentName, transpose(this.previousBoardMap.get(username)));
+        this.transitionBoardMap.put(opponentName, transpose(this.transitionBoardMap.get(username)));
+        this.boardMap.put(opponentName, transpose(this.boardMap.get(username)));
     }
 
     /*-------------------------------------------------------------------------
@@ -209,7 +206,7 @@ public class Game {
      *
      * @return
      */
-    private List<List<Cell>> initializeBoard(int numRows, int numCols) {
+    private static List<List<Cell>> initializeBoard(int numRows, int numCols) {
         List<List<Cell>> board = new ArrayList<>();
         for (int i = 0; i < numRows; i++) {
             List<Cell> row = new ArrayList<>();
@@ -226,7 +223,7 @@ public class Game {
      * @param original
      * @return
      */
-    private List<List<Cell>> transpose(List<List<Cell>> original) {
+    private static List<List<Cell>> transpose(List<List<Cell>> original) {
         List<List<Cell>> transposed = new ArrayList<>();
         for (int i = original.size() - 1; i >=0; i--) {
             transposed.add(original.get(i));
