@@ -153,7 +153,6 @@ public class Game {
      * @param username
      */
     public void updateTransitionalBoard(String username) {
-        LOGGER.info("advancing troops for {}", username);
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
@@ -176,8 +175,18 @@ public class Game {
         this.getTransitionBoardMap().put(username, board);
     }
 
-    public void updateCurrentBoard(String username, String opponentName) {
-        // TODO do clashes
+    public void updateCurrentBoard(String username) {
+        List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                Cell cell = board.get(i).get(j);
+                if (cell.getCards().size() > 1) {
+                    cell.handleClash();
+                }
+            }
+        }
+        LOGGER.info("updating current board for {} to {}", username, board);
+        this.getBoardMap().put(username, board);
     }
 
     /**

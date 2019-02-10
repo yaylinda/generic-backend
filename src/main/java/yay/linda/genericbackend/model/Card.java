@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class Card {
+public class Card implements Comparable<Card> {
 
     private String id;
     private CardType type;
@@ -26,5 +26,23 @@ public class Card {
         return this.getType() == CardType.TROOP
                 && this.owner.equals(username)
                 && this.getNumTurnsOnBoard() > 0;
+    }
+
+    @Override
+    public int compareTo(Card o) {
+        // order is TROOPS first, then WALLS. if same type, compare might; smaller might first
+        if (this.type == CardType.TROOP && o.getType() == CardType.WALL) {
+            return -1;
+        } else if (this.type == CardType.WALL && o.getType() == CardType.TROOP) {
+            return 1;
+        } else {
+            if (this.might > o.getMight()) {
+                return 1;
+            } else if (this.might < o.getMight()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
     }
 }

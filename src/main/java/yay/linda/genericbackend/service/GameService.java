@@ -193,7 +193,7 @@ public class GameService {
 
         game.updatePreviousBoard(username);
         game.updateTransitionalBoard(username);
-        game.updateCurrentBoard(username, opponentName);
+        game.updateCurrentBoard(username);
         game.incrementNumTurns(username);
         game.incrementEnergyForEndTurn(username);
 
