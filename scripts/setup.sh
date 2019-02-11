@@ -48,12 +48,14 @@ npm install -g @angular/cli
 
 npm i --save-exact --save terser@3.16.1
 
-sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app.service
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-dev.service
 
-sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app.sh
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-dev.sh
 
-sudo cp /home/ec2-user/generic-backend/scripts/start-app.service /etc/systemd/system/start-app.service
+sudo cp /home/ec2-user/generic-backend/scripts/start-app-dev.service /etc/systemd/system/start-app-dev.service
 
-sudo systemctl start start-app
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-master.service
 
-sudo systemctl enable start-app
+sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-master.sh
+
+sudo cp /home/ec2-user/generic-backend/scripts/start-app-master.service /etc/systemd/system/start-app-master.service

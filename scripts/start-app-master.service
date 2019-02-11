@@ -2,7 +2,7 @@
 Description=Start generic-backend and generic-frontend
 
 [Service]
-ExecStart=/home/ec2-user/generic-backend/scripts/start-app.sh
+ExecStart=/home/ec2-user/generic-backend/scripts/start-app-master.sh
 
 [Install]
 WantedBy=multi-user.target
