@@ -1,92 +1,54 @@
 package yay.linda.genericbackend.model;
 
-public class Card {
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
+@Data
+@Builder
+@AllArgsConstructor
+public class Card implements Comparable<Card> {
+
+    private String id;
     private CardType type;
-    private int might;
-    private int movement;
-    private double cost;
+    private Integer might;
+    private Integer movement;
+    private Double cost;
     private String owner;
     private String specialAbility; // TODO v2
-    private int numTurnsOnBoard;
+    private Integer numTurnsOnBoard;
 
     public Card() {
         this.numTurnsOnBoard = 0;
     }
 
-    public CardType getType() {
-        return type;
+    public void incrementNumTurnsOnBoard(String username) {
+        if (this.owner.equals(username)) {
+            this.numTurnsOnBoard += 1;
+        }
     }
 
-    public Card setType(CardType type) {
-        this.type = type;
-        return this;
-    }
-
-    public int getMight() {
-        return might;
-    }
-
-    public Card setMight(int might) {
-        this.might = might;
-        return this;
-    }
-
-    public int getMovement() {
-        return movement;
-    }
-
-    public Card setMovement(int movement) {
-        this.movement = movement;
-        return this;
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public Card setCost(double cost) {
-        this.cost = cost;
-        return this;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public Card setOwner(String owner) {
-        this.owner = owner;
-        return this;
-    }
-
-    public String getSpecialAbility() {
-        return specialAbility;
-    }
-
-    public Card setSpecialAbility(String specialAbility) {
-        this.specialAbility = specialAbility;
-        return this;
-    }
-
-    public int getNumTurnsOnBoard() {
-        return numTurnsOnBoard;
-    }
-
-    public Card setNumTurnsOnBoard(int numTurnsOnBoard) {
-        this.numTurnsOnBoard = numTurnsOnBoard;
-        return this;
+    public boolean isQualifiedToAdvance(String username) {
+        return this.getType() == CardType.TROOP
+                && this.owner.equals(username)
+                && this.getNumTurnsOnBoard() > 0;
     }
 
     @Override
-    public String toString() {
-        return "Card{" +
-                "type=" + type +
-                ", might=" + might +
-                ", movement=" + movement +
-                ", cost=" + cost +
-                ", owner='" + owner + '\'' +
-                ", specialAbility='" + specialAbility + '\'' +
-                ", numTurnsOnBoard=" + numTurnsOnBoard +
-                '}';
+    public int compareTo(Card o) {
+        // order is TROOPS first, then WALLS. if same type, compare might; smaller might first
+        if (this.type == CardType.TROOP && o.getType() == CardType.WALL) {
+            return -1;
+        } else if (this.type == CardType.WALL && o.getType() == CardType.TROOP) {
+            return 1;
+        } else {
+            if (this.might > o.getMight()) {
+                return 1;
+            } else if (this.might < o.getMight()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ import yay.linda.genericbackend.model.CardType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 public class CardGeneratorUtil {
 
@@ -13,13 +14,16 @@ public class CardGeneratorUtil {
         CardType cardType = randomizeCardType();
         int might = randomizeMightStat();
         int move = randomizeMoveStat(cardType);
-        return new Card()
-                .setType(cardType)
-                .setOwner(username)
-                .setMight(might)
-                .setMovement(move)
-                .setCost(calculateCostStat(might, move))
-                .setSpecialAbility("TBD"); // TODO v2 implement special ability
+        return Card.builder()
+                .id(UUID.randomUUID().toString())
+                .type(cardType)
+                .owner(username)
+                .might(might)
+                .movement(move)
+                .cost(calculateCostStat(might, move))
+                .numTurnsOnBoard(0)
+                .specialAbility("TBD")
+                .build(); // TODO v2 implement special ability
     }
 
     public static List<Card> generateCards(String username, int numCards) {

@@ -3,7 +3,7 @@ package yay.linda.genericbackend.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
@@ -16,18 +16,19 @@ public class GameDTO {
     private String id;
     private String username;
     private String opponentName;
-    private List<List<Cell>> board;
-    private List<List<Cell>> previousBoard;
+    private List<List<CellDTO>> board;
+    private List<List<CellDTO>> transitionBoard;
+    private List<List<CellDTO>> previousBoard;
     private List<Card> cards;
-    private boolean currentTurn;
-    private int points;
-    private double energy;
+    private Boolean currentTurn;
+    private Integer points;
+    private Double energy;
     private GameStatus status;
-    private int numTurns;
-    private int opponentPoints;
-    private int numCardsPlayed;
-    private int numRows;
-    private int numCols;
+    private Integer numTurns;
+    private Integer opponentPoints;
+    private Integer numCardsPlayed;
+    private Integer numRows;
+    private Integer numCols;
     private String md5Hash;
     private String createdDate;
     private String lastModifiedDate;
@@ -39,10 +40,11 @@ public class GameDTO {
         this.id = game.getId();
         this.username = isPlayer1 ? game.getPlayer1() : game.getPlayer2();
         this.opponentName = isPlayer1 ? game.getPlayer2() : game.getPlayer1();
-        this.board = game.getBoardMap().get(username);
-        this.previousBoard = game.getPreviousBoardMap().get(username);
+        this.board = convertBoardToCellDTO(game.getBoardMap().get(username));
+        this.transitionBoard = convertBoardToCellDTO(game.getTransitionBoardMap().get(username));
+        this.previousBoard = convertBoardToCellDTO(game.getPreviousBoardMap().get(username));
         this.cards = game.getCardsMap().get(username);
-        this.currentTurn = calculateCurrentTurn(isPlayer1, game.isPlayer1sTurn());
+        this.currentTurn = calculateCurrentTurn(isPlayer1, game.getPlayer1sTurn());
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
@@ -56,6 +58,7 @@ public class GameDTO {
         this.lastModifiedDate = SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate());
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
+        this.winner = game.getWinner();
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {
@@ -63,7 +66,7 @@ public class GameDTO {
         gameDTO.setId(game.getId());
         gameDTO.setOpponentName(game.getPlayer1());
         gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(game.getCreatedDate()));
-        gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.isPlayer1sTurn())); // if player1 has ended turn after creating the game
+        gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.getPlayer1sTurn())); // if player1 has ended turn after creating the game
         return gameDTO;
     }
 
@@ -73,5 +76,17 @@ public class GameDTO {
         } else {
             return !isPlayer1sTurn;
         }
+    }
+
+    private static List<List<CellDTO>> convertBoardToCellDTO(List<List<Cell>> original) {
+        List<List<CellDTO>> result = new ArrayList<>();
+        for (List<Cell> row : original) {
+            List<CellDTO> cellDTOs = new ArrayList<>();
+            for (Cell cell : row) {
+                cellDTOs.add(new CellDTO(cell));
+            }
+            result.add(cellDTOs);
+        }
+        return result;
     }
 }

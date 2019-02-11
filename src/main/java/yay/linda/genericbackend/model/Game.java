@@ -6,7 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import yay.linda.genericbackend.service.CardGeneratorUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class Game {
@@ -17,8 +21,9 @@ public class Game {
     private String id;
     private String player1;
     private String player2;
-    private boolean player1sTurn;
+    private Boolean player1sTurn;
     private Map<String, List<List<Cell>>> boardMap;
+    private Map<String, List<List<Cell>>> transitionBoardMap;
     private Map<String, List<List<Cell>>> previousBoardMap;
     private Map<String, Integer> pointsMap;
     private Map<String, Double> energyMap;
@@ -30,14 +35,15 @@ public class Game {
     private Date player2JoinTime;
     private Date completedDate;
     private GameStatus status;
-    private int numRows;
-    private int numCols;
-    private int numCardsInHand;
-    private int minTerritoryRowNum;
+    private Integer numRows;
+    private Integer numCols;
+    private Integer numCardsInHand;
+    private Integer minTerritoryRowNum;
     private String winner;
 
     public Game(int numRows, int numCols, int numCardsInHand) {
         this.boardMap = new HashMap<>();
+        this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
@@ -60,6 +66,7 @@ public class Game {
         this.player2 = "<TBD>";
         this.player1sTurn = true;
         this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
+        this.transitionBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
@@ -78,6 +85,7 @@ public class Game {
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
         this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
+        this.transitionBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player2, this.initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
@@ -98,21 +106,19 @@ public class Game {
      */
     public void putCardOnBoard(String username, int row, int col, Card card) {
         this.previousBoardMap.put(username, new ArrayList<>(this.boardMap.get(username)));
-        this.boardMap.get(username).get(row).get(col).setCard(card);
+        this.boardMap.get(username).get(row).get(col).addCard(card);
     }
 
     /**
      *
      * @param username
      */
-    public void incrementEnergy(String username) {
-        double baseEnergy;
-        if (username.equalsIgnoreCase(this.player1)) {
-            baseEnergy = 1;
-        } else {
-            baseEnergy = 2;
-        }
-        this.getEnergyMap().put(username, Math.min(baseEnergy + this.getNumTurnsMap().get(username), 10));
+    public void incrementEnergyForEndTurn(String username) {
+        this.getEnergyMap().put(username, Math.min(1.0 + this.getNumTurnsMap().get(username), 10));
+    }
+
+    public void decrementEnergyForPutCard(String username, Double cost) {
+        this.getEnergyMap().put(username, this.getEnergyMap().get(username) - cost);
     }
 
     /**
@@ -122,11 +128,12 @@ public class Game {
     public void incrementNumTurns(String username) {
         this.getNumTurnsMap().put(username, this.getNumTurnsMap().get(username) + 1);
         boardMap.get(username).forEach(rows ->
-                rows.forEach(cell -> {
-                    if (cell.getCard() != null && cell.getCard().getOwner().equals(username)) {
-                        cell.getCard().setNumTurnsOnBoard(cell.getCard().getNumTurnsOnBoard() + 1);
-                    }
-                }));
+                rows.forEach(cell ->
+                        cell.incrementCardsNumTurnsOnBoard(username)));
+    }
+
+    public void incrementNumCardsPlayed(String username) {
+        this.getNumCardsPlayedMap().put(username, this.getNumCardsPlayedMap().get(username) + 1);
     }
 
     /**
@@ -135,61 +142,48 @@ public class Game {
      */
     public void updatePreviousBoard(String username) {
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
+        LOGGER.info("updating previous board for {} to {}", username, board);
         this.getPreviousBoardMap().put(username, board);
     }
 
     /**
      *
      * @param username
-     * @param opponentName
      */
-    public void advanceTroops(String username, String opponentName) {
-        LOGGER.info("advancing troops for {}", username);
-        List<List<Cell>> board = initializeBoard(numRows, numCols);
+    public void updateTransitionalBoard(String username) {
+        List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
-                Cell cell = this.getBoardMap().get(username).get(i).get(j);
-                if (cell.getCard() != null) {
-                    Card card = cell.getCard();
-                    if (card.getType() == CardType.TROOP && card.getOwner().equals(username) && card.getNumTurnsOnBoard() > 0) {
-                        int newRow = i - cell.getCard().getMovement();
+                Cell cell = board.get(i).get(j);
+                for (Card card : cell.getCards()) {
+                    if (card.isQualifiedToAdvance(username)) {
+                        int newRow = i - card.getMovement();
                         if (newRow < 0) {
                             this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
                         } else {
-                            Cell cellAtNewPosition = this.getBoardMap().get(username).get(newRow).get(j);
-                            if (cellAtNewPosition.getCard() != null) {
-                                LOGGER.info("clash!");
-                                LOGGER.info("user's card: {}", card);
-                                Card cardAtNewPosition = cellAtNewPosition.getCard();
-                                LOGGER.info("card at new position: {}", cardAtNewPosition);
-                                if (cardAtNewPosition.getOwner().equals(username)) {
-                                    if (cardAtNewPosition.getType() == card.getType()) {
-                                        cell.getCard().setMight(card.getMight() + cardAtNewPosition.getMight());
-                                    } else {
-                                        cell.getCard().setMight(card.getMight() + cardAtNewPosition.getMight());
-                                        cell.getCard().setType(CardType.WALL);
-                                    }
-                                } else {
-                                    int mightDiff = card.getMight() - cardAtNewPosition.getMight();
-                                    LOGGER.info("mightDiff: " + mightDiff);
-                                    if (mightDiff > 0) {
-                                        cell.getCard().setMight(mightDiff);
-                                    } else if (mightDiff < 0) {
-                                        cell.getCard().setMight(mightDiff * -1);
-                                        cell.getCard().setOwner(opponentName);
-                                    } else {
-                                        cell.setCard(null);
-                                    }
-                                }
-                            }
-                            board.get(newRow).set(j, cell);
+                            Cell cellAtNewRow = board.get(newRow).get(j);
+                            cellAtNewRow.addCard(card);
                         }
-                    } else {
-                        board.get(i).set(j, cell);
+                        cell.removeCard(card);
                     }
                 }
             }
         }
+        LOGGER.info("updating transition board for {} to {}", username, board);
+        this.getTransitionBoardMap().put(username, board);
+    }
+
+    public void updateCurrentBoard(String username, String opponentName) {
+        List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                Cell cell = board.get(i).get(j);
+                if (cell.getCards().size() > 1) {
+                    cell.handleClash(username, opponentName);
+                }
+            }
+        }
+        LOGGER.info("updating current board for {} to {}", username, board);
         this.getBoardMap().put(username, board);
     }
 
@@ -198,8 +192,10 @@ public class Game {
      * @param username
      * @param opponentName
      */
-    public void advanceTroopsForOpponent(String username, String opponentName) {
-        this.getBoardMap().put(opponentName, this.transpose(this.getBoardMap().get(username)));
+    public void updateOpponentBoard(String username, String opponentName) {
+        this.previousBoardMap.put(opponentName, transpose(this.previousBoardMap.get(username)));
+        this.transitionBoardMap.put(opponentName, transpose(this.transitionBoardMap.get(username)));
+        this.boardMap.put(opponentName, transpose(this.boardMap.get(username)));
     }
 
     /*-------------------------------------------------------------------------
@@ -210,7 +206,7 @@ public class Game {
      *
      * @return
      */
-    private List<List<Cell>> initializeBoard(int numRows, int numCols) {
+    private static List<List<Cell>> initializeBoard(int numRows, int numCols) {
         List<List<Cell>> board = new ArrayList<>();
         for (int i = 0; i < numRows; i++) {
             List<Cell> row = new ArrayList<>();
@@ -227,7 +223,7 @@ public class Game {
      * @param original
      * @return
      */
-    private List<List<Cell>> transpose(List<List<Cell>> original) {
+    private static List<List<Cell>> transpose(List<List<Cell>> original) {
         List<List<Cell>> transposed = new ArrayList<>();
         for (int i = original.size() - 1; i >=0; i--) {
             transposed.add(original.get(i));
