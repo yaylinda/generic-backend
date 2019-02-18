@@ -110,6 +110,8 @@ public class GameService {
         this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
 
         gameRepository.save(newGame);
+
+        // increment numPlayed for user
         return new GameDTO(newGame, true);
     }
 
