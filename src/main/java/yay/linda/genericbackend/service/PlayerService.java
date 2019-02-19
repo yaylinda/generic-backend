@@ -1,6 +1,7 @@
 package yay.linda.genericbackend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.model.FriendRequest;
@@ -31,10 +32,13 @@ public class PlayerService {
     @Autowired
     private FriendRequestRepository friendRequestRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     public List<PlayerDTO> getAllPlayers(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
-        List<User> users = userRepository.findAllOrderByLastActiveDateDesc();
+        List<User> users = userRepository.findAllByOrderByLastActiveDateDesc();
         users = users.stream().filter(u -> !u.getUsername().equals(username)).collect(Collectors.toList());
 
         return users.stream()
@@ -94,6 +98,8 @@ public class PlayerService {
                 .build();
 
         friendRequestRepository.save(friendRequest);
+
+        this.messagingTemplate.convertAndSend("/topic/friendRequestReceived/" + requestFriendDTO.getRequestee(), username);
     }
 
     public void respondFriend(String sessionToken, RespondFriendDTO respondFriendDTO) {
@@ -106,9 +112,11 @@ public class PlayerService {
         }
 
         FriendRequest friendRequest = optionalFriendRequest.get();
-        friendRequest.setRequestDate(new Date());
-        friendRequest.setStatus(respondFriendDTO.getIsAccepted() ? FriendRequestStatus.ACCEPTED.name() : FriendRequestStatus.DECLINED.name());
+        friendRequest.setResponseDate(new Date());
+        friendRequest.setStatus(respondFriendDTO.getIsAccept() ? FriendRequestStatus.ACCEPTED.name() : FriendRequestStatus.DECLINED.name());
 
         friendRequestRepository.save(friendRequest);
+
+        this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequestee(), username);
     }
 }

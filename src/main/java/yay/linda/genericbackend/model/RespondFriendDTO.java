@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class RespondFriendDTO {
     private String requestId;
-    private Boolean isAccepted;
+    private Boolean isAccept;
 }

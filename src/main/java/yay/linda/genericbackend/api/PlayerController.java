@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -30,7 +31,7 @@ public class PlayerController {
     @Autowired
     private PlayerService playerService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<List<PlayerDTO>> getAllPlayers(
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET PLAYERS from sessionToken request: sessionToken={}", sessionToken);
@@ -44,14 +45,14 @@ public class PlayerController {
         return ResponseEntity.ok(playerService.getFriends(sessionToken));
     }
 
-    @GetMapping("/activity")
+    @GetMapping("/activities")
     public ResponseEntity<List<PlayerActivityDTO>> getActivity(
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET player activity from sessionToken request: sessionToken={}", sessionToken);
         return ResponseEntity.ok(playerService.getActivity(sessionToken));
     }
 
-    @PutMapping("/friends/request")
+    @PostMapping("/friends/request")
     public ResponseEntity<UserDTO> requestFriend(
             @RequestHeader("Session-Token") String sessionToken,
             @RequestBody RequestFriendDTO requestFriendDTO) {
