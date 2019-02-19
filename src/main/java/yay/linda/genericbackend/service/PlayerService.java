@@ -16,6 +16,7 @@ import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,11 +39,20 @@ public class PlayerService {
     public List<PlayerDTO> getAllPlayers(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
 
-        List<User> users = userRepository.findAllByOrderByLastActiveDateDesc();
-        users = users.stream().filter(u -> !u.getUsername().equals(username)).collect(Collectors.toList());
+        HashSet<String> friends = getFriends(sessionToken).stream()
+                .map(PlayerDTO::getUsername)
+                .collect(Collectors.toCollection(HashSet::new));
 
-        return users.stream()
-                .map(PlayerDTO::fromUser)
+        return userRepository.findAllByOrderByLastActiveDateDesc().stream()
+                .filter(u -> !u.getUsername().equals(username))
+                .filter(p -> !friends.contains(p.getUsername()))
+                .map(u -> {
+                    List<FriendRequest> requests0 = friendRequestRepository
+                            .findAllByRequesterAndRequesteeAndStatus(username, u.getUsername(), FriendRequestStatus.REQUESTED.name());
+                    List<FriendRequest> requests1 = friendRequestRepository
+                            .findAllByRequesterAndRequesteeAndStatus(u.getUsername(), username, FriendRequestStatus.REQUESTED.name());
+                    return PlayerDTO.fromUser(u, requests0.isEmpty() && requests1.isEmpty());
+                })
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +66,7 @@ public class PlayerService {
                 .map(fr -> userRepository.findByUsername(fr.getRequestee()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(PlayerDTO::fromUser)
+                .map(u -> PlayerDTO.fromUser(u, false))
                 .collect(Collectors.toList()));
 
         friends.addAll(friendRequestRepository
@@ -64,7 +74,7 @@ public class PlayerService {
                 .map(fr -> userRepository.findByUsername(fr.getRequester()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(PlayerDTO::fromUser)
+                .map(u -> PlayerDTO.fromUser(u, false))
                 .collect(Collectors.toList()));
 
         return friends;

@@ -17,4 +17,6 @@ public interface FriendRequestRepository extends MongoRepository<FriendRequest, 
     List<FriendRequest> findAllByRequesterAndStatus(String requester, String status);
 
     List<FriendRequest> findAllByRequesteeAndStatus(String requestee, String status);
+
+    List<FriendRequest> findAllByRequesterAndRequesteeAndStatus(String requester, String requestee, String status);
 }

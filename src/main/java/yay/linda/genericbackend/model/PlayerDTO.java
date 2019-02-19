@@ -12,18 +12,20 @@ public class PlayerDTO {
     private String lastActivity;
     private Integer numWins;
     private Integer numPlayed;
+    private Boolean canAdd;
 
     private PlayerDTO() {
 
     }
 
-    public static PlayerDTO fromUser(User user) {
+    public static PlayerDTO fromUser(User user, Boolean canAdd) {
         PlayerDTO playerDTO = new PlayerDTO();
         playerDTO.username = user.getUsername();
         playerDTO.lastActiveDate = SIMPLE_DATE_FORMAT.format(user.getLastActiveDate());
         playerDTO.lastActivity = user.getLastActivity();
         playerDTO.numWins = user.getNumWins();
         playerDTO.numPlayed = user.getNumPlayed();
+        playerDTO.canAdd = canAdd;
         return playerDTO;
     }
 }
