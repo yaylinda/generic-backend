@@ -12,6 +12,7 @@ import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.Game;
 import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.GameStatus;
+import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
 import yay.linda.genericbackend.model.PutCardResponse;
 import yay.linda.genericbackend.model.PutCardStatus;
@@ -107,11 +108,26 @@ public class GameService {
 
         newGame.createGameForPlayer1(username);
 
+        gameRepository.save(newGame);
+
         this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
+
+        // increment numPlayed for user
+        return new GameDTO(newGame, true);
+    }
+
+    public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+
+        Game newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
+        newGame.createGameForPlayer1(username);
+        newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2());
 
         gameRepository.save(newGame);
 
-        // increment numPlayed for user
+        this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
+
         return new GameDTO(newGame, true);
     }
 

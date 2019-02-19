@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.GameDTO;
+import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
 import yay.linda.genericbackend.model.PutCardResponse;
 import yay.linda.genericbackend.service.GameService;
@@ -66,6 +67,14 @@ public class GameController {
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("CREATE GAME: sessionToken={}", sessionToken);
         return ResponseEntity.ok(gameService.createGame(sessionToken));
+    }
+
+    @PostMapping("/invite")
+    public ResponseEntity<GameDTO> inviteToGame(
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestBody InviteToGameDTO inviteToGameDTO) {
+        LOGGER.info("CREATE GAME: sessionToken={}, inviteToGameDTO={}", sessionToken, inviteToGameDTO);
+        return ResponseEntity.ok(gameService.inviteToGame(sessionToken, inviteToGameDTO));
     }
 
     @PutMapping("/putCard/{gameId}")

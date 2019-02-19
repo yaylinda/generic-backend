@@ -127,6 +127,6 @@ public class PlayerService {
 
         friendRequestRepository.save(friendRequest);
 
-        this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequestee(), username);
+        this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequester(), username);
     }
 }
