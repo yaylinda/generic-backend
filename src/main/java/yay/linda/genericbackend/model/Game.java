@@ -28,8 +28,6 @@ public class Game {
     private Map<String, Integer> pointsMap;
     private Map<String, Double> energyMap;
     private Map<String, List<Card>> cardsMap;
-    private Map<String, Integer> numTurnsMap;
-    private Map<String, Integer> numCardsPlayedMap;
     private Date createdDate;
     private Date lastModifiedDate;
     private Date player2JoinTime;
@@ -40,21 +38,23 @@ public class Game {
     private Integer numCardsInHand;
     private Integer minTerritoryRowNum;
     private String winner;
+    private Map<String, GameStats> gameStatsMap;
+    private Map<String, List<Card>> endzoneMap;
 
-    public Game(int numRows, int numCols, int numCardsInHand) {
+    public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
-        this.numTurnsMap = new HashMap<>();
-        this.numCardsPlayedMap = new HashMap<>();
         this.createdDate = new Date();
         this.numRows = numRows;
         this.numCols = numCols;
         this.numCardsInHand = numCardsInHand;
-        this.minTerritoryRowNum = numRows - 2; // TODO: 2 rows hardcoded for now
+        this.minTerritoryRowNum = numRows - numTerritoryRows;
+        this.gameStatsMap = new HashMap<>();
+        this.endzoneMap = new HashMap<>();
     }
 
     /**
@@ -65,17 +65,17 @@ public class Game {
         this.player1 = player1;
         this.player2 = "<TBD>";
         this.player1sTurn = true;
-        this.boardMap.put(player1, this.initializeBoard(numRows, numCols));
-        this.transitionBoardMap.put(player1, this.initializeBoard(numRows, numCols));
-        this.previousBoardMap.put(player1, this.initializeBoard(numRows, numCols));
+        this.boardMap.put(player1, initializeBoard(numRows, numCols));
+        this.transitionBoardMap.put(player1, initializeBoard(numRows, numCols));
+        this.previousBoardMap.put(player1, initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
         this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
-        this.numCardsPlayedMap.put(player1, 0);
-        this.numTurnsMap.put(player1, 0);
+        this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = new Date();
         this.lastModifiedDate = new Date();
         this.status = GameStatus.WAITING_PLAYER_2;
+        this.endzoneMap.put(player1, new ArrayList<>());
     }
 
     /**
@@ -84,17 +84,17 @@ public class Game {
      */
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
-        this.boardMap.put(player2, this.transpose(this.boardMap.get(this.player1)));
-        this.transitionBoardMap.put(player2, this.initializeBoard(numRows, numCols));
-        this.previousBoardMap.put(player2, this.initializeBoard(numRows, numCols));
+        this.boardMap.put(player2, transpose(this.boardMap.get(this.player1)));
+        this.transitionBoardMap.put(player2, initializeBoard(numRows, numCols));
+        this.previousBoardMap.put(player2, initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
         this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
-        this.numCardsPlayedMap.put(player2, 0);
-        this.numTurnsMap.put(player2, 0);
+        this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = new Date();
         this.lastModifiedDate = new Date();
         this.status = GameStatus.IN_PROGRESS;
+        this.endzoneMap.put(player2, new ArrayList<>());
     }
 
     /**
@@ -114,7 +114,7 @@ public class Game {
      * @param username
      */
     public void incrementEnergyForEndTurn(String username) {
-        this.getEnergyMap().put(username, Math.min(1.0 + this.getNumTurnsMap().get(username), 10));
+        this.getEnergyMap().put(username, Math.min(1.0 + this.gameStatsMap.get(username).getNumTurns(), 10));
     }
 
     public void decrementEnergyForPutCard(String username, Double cost) {
@@ -126,14 +126,17 @@ public class Game {
      * @param username
      */
     public void incrementNumTurns(String username) {
-        this.getNumTurnsMap().put(username, this.getNumTurnsMap().get(username) + 1);
+        // increment num turns of player
+        this.gameStatsMap.get(username).incrementNumTurns();
+
+        // increment num turns on board for each card on the board
         boardMap.get(username).forEach(rows ->
                 rows.forEach(cell ->
                         cell.incrementCardsNumTurnsOnBoard(username)));
     }
 
     public void incrementNumCardsPlayed(String username) {
-        this.getNumCardsPlayedMap().put(username, this.getNumCardsPlayedMap().get(username) + 1);
+        this.gameStatsMap.get(username).incrementNumCardsPlayed();
     }
 
     /**

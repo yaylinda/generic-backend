@@ -24,7 +24,6 @@ public class GameDTO {
     private Integer points;
     private Double energy;
     private GameStatus status;
-    private Integer numTurns;
     private Integer opponentPoints;
     private Integer numCardsPlayed;
     private Integer numRows;
@@ -35,6 +34,9 @@ public class GameDTO {
     private String player2JoinDate;
     private String completedDate;
     private String winner;
+    private GameStats gameStats;
+    private List<Card> endzone;
+    private List<Card> opponentEndzone;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -48,8 +50,6 @@ public class GameDTO {
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
-        this.numTurns = game.getNumTurnsMap().get(username);
-        this.numCardsPlayed = game.getNumCardsPlayedMap().get(username);
         this.opponentPoints = !this.opponentName.equals("<TBD>") ? game.getPointsMap().get(this.opponentName) : 0;
         this.numRows = this.board.size();
         this.numCols = this.board.get(0).size();
@@ -59,6 +59,9 @@ public class GameDTO {
         this.player2JoinDate = game.getPlayer2JoinTime() != null ? SIMPLE_DATE_FORMAT.format(game.getPlayer2JoinTime()) : null;
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
         this.winner = game.getWinner();
+        this.gameStats = game.getGameStatsMap().get(username);
+        this.endzone = game.getEndzoneMap().get(username);
+        this.endzone = game.getEndzoneMap().get(opponentName);
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {
