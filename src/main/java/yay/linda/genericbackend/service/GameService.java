@@ -104,7 +104,11 @@ public class GameService {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
 
-        Game newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
+        Game newGame = new Game(
+                this.gameProperties.getNumRows(),
+                this.gameProperties.getNumCols(),
+                this.gameProperties.getNumCardsInHand(),
+                this.gameProperties.getNumTerritoryRows());
 
         newGame.createGameForPlayer1(username);
 
@@ -120,7 +124,12 @@ public class GameService {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
 
-        Game newGame = new Game(this.gameProperties.getNumRows(), this.gameProperties.getNumCols(), this.gameProperties.getNumCardsInHand());
+        Game newGame = new Game(
+                this.gameProperties.getNumRows(),
+                this.gameProperties.getNumCols(),
+                this.gameProperties.getNumCardsInHand(),
+                this.gameProperties.getNumTerritoryRows());
+
         newGame.createGameForPlayer1(username);
         newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2());
 

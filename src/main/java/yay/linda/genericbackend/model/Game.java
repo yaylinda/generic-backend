@@ -161,8 +161,9 @@ public class Game {
                 for (Card card : cell.getCards()) {
                     if (card.isQualifiedToAdvance(username)) {
                         int newRow = i - card.getMovement();
-                        if (newRow < 0) {
+                        if (newRow < 0) { // card has moved into endzone and points have been scored
                             this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
+                            this.endzoneMap.get(username).add(card);
                         } else {
                             Cell cellAtNewRow = board.get(newRow).get(j);
                             cellAtNewRow.addCard(card);
