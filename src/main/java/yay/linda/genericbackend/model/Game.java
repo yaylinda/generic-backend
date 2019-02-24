@@ -154,6 +154,7 @@ public class Game {
      * @param username
      */
     public void updateTransitionalBoard(String username) {
+        // TODO implement logic for card with side to side movemet
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
