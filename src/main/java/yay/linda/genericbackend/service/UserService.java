@@ -97,7 +97,7 @@ public class UserService {
     public void incrementNumGames(String username) {
         LOGGER.info("Incrementing numGames for {}", username);
         userRepository.findByUsername(username).ifPresent(u -> {
-            u.setNumGames(u.getNumGames());
+            u.setNumGames(u.getNumGames() + 1);
             userRepository.save(u);
         });
     }
@@ -105,7 +105,7 @@ public class UserService {
     public void incrementNumWins(String username) {
         LOGGER.info("Incrementing numWins for {}", username);
         userRepository.findByUsername(username).ifPresent(u -> {
-            u.setNumWins(u.getNumWins());
+            u.setNumWins(u.getNumWins() + 1);
             userRepository.save(u);
         });
     }
