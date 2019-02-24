@@ -61,7 +61,7 @@ public class GameDTO {
         this.winner = game.getWinner();
         this.gameStats = game.getGameStatsMap().get(username);
         this.endzone = game.getEndzoneMap().get(username);
-        this.endzone = game.getEndzoneMap().get(opponentName);
+        this.opponentEndzone = game.getEndzoneMap().get(opponentName);
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {

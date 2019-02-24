@@ -36,7 +36,7 @@ public class CardGeneratorUtil {
     private static CardType randomizeCardType() {
         Random random = new Random();
         int randomInt = random.nextInt(100);
-        return randomInt <= 25 ? CardType.DEFENSE : CardType.OFFENSE;
+        return randomInt <= 25 ? CardType.WALL : CardType.TROOP;
     }
 
     private static int randomizeMightStat() {
@@ -45,7 +45,7 @@ public class CardGeneratorUtil {
 
     private static int randomizeMoveStat(CardType cardType) {
         int movement = 0;
-        if (cardType.equals(CardType.OFFENSE)) {
+        if (cardType.equals(CardType.TROOP)) {
             movement = 1;
         }
         return movement;

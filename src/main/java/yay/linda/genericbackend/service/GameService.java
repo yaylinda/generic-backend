@@ -16,6 +16,7 @@ import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
 import yay.linda.genericbackend.model.PutCardResponse;
 import yay.linda.genericbackend.model.PutCardStatus;
+import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
 import java.util.Date;
@@ -36,15 +37,18 @@ public class GameService {
     private SessionService sessionService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private GameProperties gameProperties;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     public List<GameDTO> getGames(String sessionToken) {
-
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
         List<GameDTO> gameDTOs = games1.stream()
@@ -63,6 +67,7 @@ public class GameService {
     public GameDTO getGameById(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.GET_GAME_BY_ID);
 
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
@@ -71,6 +76,7 @@ public class GameService {
     public List<GameDTO> getJoinableGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.GET_JOINABLE_GAMES_LIST);
 
         return getWaitingGames(username).stream()
                 .map(GameDTO::gameDTOForJoinableList)
@@ -80,6 +86,7 @@ public class GameService {
     public GameDTO joinGame(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.JOIN_GAME);
 
         Game gameToJoin;
         if (StringUtils.isEmpty(gameId)) {
@@ -103,6 +110,7 @@ public class GameService {
     public GameDTO createGame(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.CREATE_GAME);
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
@@ -123,6 +131,7 @@ public class GameService {
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.INVITE_TO_GAME);
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
@@ -144,6 +153,7 @@ public class GameService {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.PUT_CARD);
 
         Game game = getGameById(gameId);
         game.setLastModifiedDate(new Date());
@@ -195,6 +205,7 @@ public class GameService {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.END_TURN);
 
         Game game = getGameById(gameId);
         game.setLastModifiedDate(new Date());
