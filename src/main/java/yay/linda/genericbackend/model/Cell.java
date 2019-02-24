@@ -27,6 +27,10 @@ public class Cell {
         return CollectionUtils.isEmpty(this.idToCardMap);
     }
 
+    public Boolean isFriendlyCell(String username) {
+        return isAvailable() || idToCardMap.values().stream().allMatch(c -> c.getOwner().equals(username));
+    }
+
     public void incrementCardsNumTurnsOnBoard(String username) {
         this.idToCardMap.values().forEach(c -> c.incrementNumTurnsOnBoard(username));
     }

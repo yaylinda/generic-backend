@@ -283,9 +283,13 @@ public class GameService {
                     currentGame.getEnergyMap().get(username),
                     request.getCard().getCost());
         }
-        // check row col is empty
-        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
-            return "Card must be placed in an empty Cell";
+//        // check row col is empty
+//        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
+//            return "Card must be placed in an empty Cell";
+//        }
+        // check row col does not have enemy
+        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isFriendlyCell(username)) {
+            return "Card must be placed in a friendly or empty Cell";
         }
         // check row is within limit
         if (request.getRow() < currentGame.getMinTerritoryRowNum()) {

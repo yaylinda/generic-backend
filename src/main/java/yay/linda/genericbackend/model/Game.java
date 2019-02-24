@@ -41,6 +41,18 @@ public class Game {
     private Map<String, GameStats> gameStatsMap;
     private Map<String, List<Card>> endzoneMap;
 
+    public Game() {
+        this.boardMap = new HashMap<>();
+        this.transitionBoardMap = new HashMap<>();
+        this.previousBoardMap = new HashMap<>();
+        this.cardsMap = new HashMap<>();
+        this.pointsMap = new HashMap<>();
+        this.energyMap = new HashMap<>();
+        this.createdDate = new Date();
+        this.gameStatsMap = new HashMap<>();
+        this.endzoneMap = new HashMap<>();
+    }
+
     public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();

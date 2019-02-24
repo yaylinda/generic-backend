@@ -9,15 +9,15 @@ import lombok.Data;
 @AllArgsConstructor
 public class Card implements Comparable<Card> {
 
-    private String id;
-    private CardType type;
-    private Integer might;
-    private Integer movement;
-    private MovementAxis movementAxis;
-    private MovementDirection movementDirection;
-    private Double cost;
-    private String owner;
-    private Integer numTurnsOnBoard;
+    String id;
+    CardType type;
+    Integer might;
+    Integer movement;
+    MovementAxis movementAxis;
+    MovementDirection movementDirection;
+    Double cost;
+    String owner;
+    Integer numTurnsOnBoard;
 
     public Card() {
         this.numTurnsOnBoard = 0;
