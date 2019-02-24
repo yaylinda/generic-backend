@@ -121,6 +121,10 @@ public class Game {
         this.getEnergyMap().put(username, this.getEnergyMap().get(username) - cost);
     }
 
+    public void incrementEnergyUsed(String username, Double used) {
+        this.gameStatsMap.get(username).incrementEnergyUsed(used);
+    }
+
     /**
      *
      * @param username
@@ -137,6 +141,14 @@ public class Game {
 
     public void incrementNumCardsPlayed(String username) {
         this.gameStatsMap.get(username).incrementNumCardsPlayed();
+    }
+
+    public void incrementMightPlaced(String username, Integer might) {
+        this.gameStatsMap.get(username).incrementMightPlaced(might);
+    }
+
+    public void incrementAdvancementPoints(String username, Integer advancementPoints) {
+        this.gameStatsMap.get(username).incrementAdvancementPoints(advancementPoints);
     }
 
     /**
@@ -184,7 +196,9 @@ public class Game {
             for (int j = 0; j < numCols; j++) {
                 Cell cell = board.get(i).get(j);
                 if (cell.getCards().size() > 1) {
-                    cell.handleClash(username, opponentName);
+                    int advancementPoints = 0;
+                    cell.handleClash(username, opponentName, advancementPoints);
+                    this.incrementAdvancementPoints(username, advancementPoints);
                 }
             }
         }

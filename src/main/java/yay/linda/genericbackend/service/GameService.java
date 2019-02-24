@@ -180,6 +180,9 @@ public class GameService {
             game.putCardOnBoard(username, putCardRequest.getRow(), putCardRequest.getCol(), putCardRequest.getCard());
             game.incrementNumCardsPlayed(username);
             game.decrementEnergyForPutCard(username, putCardRequest.getCard().getCost());
+            game.incrementEnergyUsed(username, putCardRequest.getCard().getCost());
+            game.incrementMightPlaced(username, putCardRequest.getCard().getMight());
+
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
                 int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardRequest.getRow();
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
@@ -232,6 +235,7 @@ public class GameService {
         game.updatePreviousBoard(username); // sets current board state to previous board state
         game.updateTransitionalBoard(username); // moves all "my" troops forward
         game.updateCurrentBoard(username, opponentName); // performs clash on cells with multiple cards
+
         game.incrementNumTurns(username);
         game.incrementEnergyForEndTurn(username);
 
