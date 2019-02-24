@@ -8,6 +8,7 @@ import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.api.error.SessionExpiredException;
 import yay.linda.genericbackend.model.Session;
 import yay.linda.genericbackend.repository.SessionRepository;
+import yay.linda.genericbackend.repository.UserRepository;
 
 import java.util.Optional;
 
@@ -18,6 +19,9 @@ public class SessionService {
 
     @Autowired
     private SessionRepository sessionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public String getUsernameFromSessionToken(String sessionToken) {
         LOGGER.info("Looking up sessionToken={}", sessionToken);

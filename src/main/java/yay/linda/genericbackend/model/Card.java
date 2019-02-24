@@ -9,15 +9,15 @@ import lombok.Data;
 @AllArgsConstructor
 public class Card implements Comparable<Card> {
 
-    private String id;
-    private CardType type;
-    private Integer might;
-    private Integer movement;
-    private MovementAxis movementAxis;
-    private MovementDirection movementDirection;
-    private Double cost;
-    private String owner;
-    private Integer numTurnsOnBoard;
+    String id;
+    CardType type;
+    Integer might;
+    Integer movement;
+    MovementAxis movementAxis;
+    MovementDirection movementDirection;
+    Double cost;
+    String owner;
+    Integer numTurnsOnBoard;
 
     public Card() {
         this.numTurnsOnBoard = 0;
@@ -30,7 +30,7 @@ public class Card implements Comparable<Card> {
     }
 
     public boolean isQualifiedToAdvance(String username) {
-        return this.getType() == CardType.OFFENSE
+        return this.getType() == CardType.TROOP
                 && this.owner.equals(username)
                 && this.getNumTurnsOnBoard() > 0;
     }
@@ -38,9 +38,9 @@ public class Card implements Comparable<Card> {
     @Override
     public int compareTo(Card o) {
         // order is TROOPS first, then WALLS. if same type, compare might; smaller might first
-        if (this.type == CardType.OFFENSE && o.getType() == CardType.DEFENSE) {
+        if (this.type == CardType.TROOP && o.getType() == CardType.WALL) {
             return -1;
-        } else if (this.type == CardType.DEFENSE && o.getType() == CardType.OFFENSE) {
+        } else if (this.type == CardType.WALL && o.getType() == CardType.TROOP) {
             return 1;
         } else {
             if (this.might > o.getMight()) {

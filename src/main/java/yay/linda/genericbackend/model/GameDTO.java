@@ -25,7 +25,6 @@ public class GameDTO {
     private Double energy;
     private GameStatus status;
     private Integer opponentPoints;
-    private Integer numCardsPlayed;
     private Integer numRows;
     private Integer numCols;
     private String md5Hash;
@@ -60,8 +59,8 @@ public class GameDTO {
         this.completedDate = game.getCompletedDate() != null ? SIMPLE_DATE_FORMAT.format(game.getCompletedDate()) : null;
         this.winner = game.getWinner();
         this.gameStats = game.getGameStatsMap().get(username);
-        this.endzone = game.getEndzoneMap().get(username);
-        this.endzone = game.getEndzoneMap().get(opponentName);
+        this.endzone = game.getEndzoneMap().getOrDefault(username, new ArrayList<>());
+        this.opponentEndzone = game.getEndzoneMap().getOrDefault(opponentName, new ArrayList<>());
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {

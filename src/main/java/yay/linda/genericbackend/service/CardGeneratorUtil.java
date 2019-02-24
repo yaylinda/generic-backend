@@ -2,6 +2,8 @@ package yay.linda.genericbackend.service;
 
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CardType;
+import yay.linda.genericbackend.model.MovementAxis;
+import yay.linda.genericbackend.model.MovementDirection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +13,19 @@ import java.util.UUID;
 public class CardGeneratorUtil {
 
     public static Card generateCard(String username) {
-        CardType cardType = randomizeCardType();
-        int might = randomizeMightStat();
-        int move = randomizeMoveStat(cardType);
+        CardType cardType = determineCardType();
+        int might = determineMightStat();
+        int move = determineMoveStat(cardType);
+        MovementAxis axis = determineMovementAxis(cardType);
+        MovementDirection direction = determineMovementDirection(cardType, axis);
         return Card.builder()
                 .id(UUID.randomUUID().toString())
                 .type(cardType)
                 .owner(username)
                 .might(might)
                 .movement(move)
+                .movementAxis(axis)
+                .movementDirection(direction)
                 .cost(calculateCostStat(might, move))
                 .numTurnsOnBoard(0)
                 .build(); // TODO v2 implement special ability
@@ -33,22 +39,27 @@ public class CardGeneratorUtil {
         return cards;
     }
 
-    private static CardType randomizeCardType() {
-        Random random = new Random();
-        int randomInt = random.nextInt(100);
-        return randomInt <= 25 ? CardType.DEFENSE : CardType.OFFENSE;
+    private static CardType determineCardType() {
+        int randomInt = getRandomNumberInRange(0, 100);
+        return randomInt < 25 ? CardType.WALL : CardType.TROOP;
     }
 
-    private static int randomizeMightStat() {
+    private static int determineMightStat() {
         return getRandomNumberInRange(1, 10);
     }
 
-    private static int randomizeMoveStat(CardType cardType) {
-        int movement = 0;
-        if (cardType.equals(CardType.OFFENSE)) {
-            movement = 1;
-        }
-        return movement;
+    private static int determineMoveStat(CardType cardType) {
+        return cardType.equals(CardType.TROOP) ? 1 : 0;
+    }
+
+    private static MovementAxis determineMovementAxis(CardType cardType) {
+        // TODO - implement
+        return MovementAxis.NONE;
+    }
+
+    private static MovementDirection determineMovementDirection(CardType cardType, MovementAxis movementAxis) {
+        // TODO - implement
+        return MovementDirection.NONE;
     }
 
     private static double calculateCostStat(int might, int move) {

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import yay.linda.genericbackend.model.PlayerActivityDTO;
+import yay.linda.genericbackend.model.FriendRequestDTO;
 import yay.linda.genericbackend.model.PlayerDTO;
 import yay.linda.genericbackend.model.RequestFriendDTO;
 import yay.linda.genericbackend.model.RespondFriendDTO;
@@ -45,14 +45,14 @@ public class PlayerController {
         return ResponseEntity.ok(playerService.getFriends(sessionToken));
     }
 
-    @GetMapping("/activities")
-    public ResponseEntity<List<PlayerActivityDTO>> getActivity(
+    @GetMapping("/friends/requests")
+    public ResponseEntity<List<FriendRequestDTO>> getRequests(
             @RequestHeader("Session-Token") String sessionToken) {
-        LOGGER.info("GET player activity from sessionToken request: sessionToken={}", sessionToken);
-        return ResponseEntity.ok(playerService.getActivity(sessionToken));
+        LOGGER.info("GET friend requests from sessionToken request: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(playerService.getFriendRequests(sessionToken));
     }
 
-    @PostMapping("/friends/request")
+    @PostMapping("/friends/requests")
     public ResponseEntity<UserDTO> requestFriend(
             @RequestHeader("Session-Token") String sessionToken,
             @RequestBody RequestFriendDTO requestFriendDTO) {
@@ -61,7 +61,7 @@ public class PlayerController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/friends/respond")
+    @PutMapping("/friends/responses")
     public ResponseEntity<UserDTO> respondFriend(
             @RequestHeader("Session-Token") String sessionToken,
             @RequestBody RespondFriendDTO respondFriendDTO) {

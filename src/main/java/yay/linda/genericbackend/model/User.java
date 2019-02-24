@@ -21,7 +21,7 @@ public class User {
     private Date lastActiveDate;
     private String lastActivity;
     private Integer numWins;
-    private Integer numPlayed;
+    private Integer numGames;
 
     public User(RegisterRequest registerRequest) {
         this.username = registerRequest.getUsername();
@@ -30,6 +30,6 @@ public class User {
         this.createdDate = new Date();
         this.lastActiveDate = new Date();
         this.numWins = 0;
-        this.numPlayed = 0;
+        this.numGames = 0;
     }
 }

@@ -27,6 +27,10 @@ public class Cell {
         return CollectionUtils.isEmpty(this.idToCardMap);
     }
 
+    public Boolean isFriendlyCell(String username) {
+        return isAvailable() || idToCardMap.values().stream().allMatch(c -> c.getOwner().equals(username));
+    }
+
     public void incrementCardsNumTurnsOnBoard(String username) {
         this.idToCardMap.values().forEach(c -> c.incrementNumTurnsOnBoard(username));
     }
@@ -39,7 +43,7 @@ public class Cell {
         this.idToCardMap.remove(card.getId());
     }
 
-    public void handleClash(String playerA, String playerB) {
+    public void handleClash(String playerA, String playerB, Integer advancementPoints) {
         // partition
         Map<String, List<Card>> usernameToCardMap = new HashMap<>();
         usernameToCardMap.put(playerA, new ArrayList<>());
@@ -56,6 +60,8 @@ public class Cell {
 
             Card cardA = fighters.get(playerA);
             Card cardB = fighters.get(playerB);
+
+            advancementPoints += Math.min(cardA.getMight(), cardB.getMight());
 
             if (cardA.getMight() > cardB.getMight()) {
                 cardA.setMight(cardA.getMight() - cardB.getMight());

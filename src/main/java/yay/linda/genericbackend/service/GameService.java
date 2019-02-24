@@ -16,6 +16,7 @@ import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
 import yay.linda.genericbackend.model.PutCardResponse;
 import yay.linda.genericbackend.model.PutCardStatus;
+import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
 import java.util.Date;
@@ -36,15 +37,18 @@ public class GameService {
     private SessionService sessionService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private GameProperties gameProperties;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     public List<GameDTO> getGames(String sessionToken) {
-
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
         List<GameDTO> gameDTOs = games1.stream()
@@ -63,6 +67,7 @@ public class GameService {
     public GameDTO getGameById(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.GET_GAME_BY_ID);
 
         Game game = getGameById(gameId);
         return new GameDTO(game, game.getPlayer1().equals(username));
@@ -71,6 +76,7 @@ public class GameService {
     public List<GameDTO> getJoinableGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_JOINABLE_GAMES_LIST);
 
         return getWaitingGames(username).stream()
                 .map(GameDTO::gameDTOForJoinableList)
@@ -80,6 +86,8 @@ public class GameService {
     public GameDTO joinGame(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.JOIN_GAME);
+        userService.incrementNumGames(username);
 
         Game gameToJoin;
         if (StringUtils.isEmpty(gameId)) {
@@ -103,6 +111,8 @@ public class GameService {
     public GameDTO createGame(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.CREATE_GAME);
+        userService.incrementNumGames(username);
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
@@ -116,13 +126,14 @@ public class GameService {
 
         this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
 
-        // increment numPlayed for user
+        // increment numGames for user
         return new GameDTO(newGame, true);
     }
 
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.INVITE_TO_GAME);
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
@@ -144,6 +155,7 @@ public class GameService {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.PUT_CARD);
 
         Game game = getGameById(gameId);
         game.setLastModifiedDate(new Date());
@@ -170,6 +182,9 @@ public class GameService {
             game.putCardOnBoard(username, putCardRequest.getRow(), putCardRequest.getCol(), putCardRequest.getCard());
             game.incrementNumCardsPlayed(username);
             game.decrementEnergyForPutCard(username, putCardRequest.getCard().getCost());
+            game.incrementEnergyUsed(username, putCardRequest.getCard().getCost());
+            game.incrementMightPlaced(username, putCardRequest.getCard().getMight());
+
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
                 int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardRequest.getRow();
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
@@ -195,6 +210,7 @@ public class GameService {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.END_TURN);
 
         Game game = getGameById(gameId);
         game.setLastModifiedDate(new Date());
@@ -221,6 +237,7 @@ public class GameService {
         game.updatePreviousBoard(username); // sets current board state to previous board state
         game.updateTransitionalBoard(username); // moves all "my" troops forward
         game.updateCurrentBoard(username, opponentName); // performs clash on cells with multiple cards
+
         game.incrementNumTurns(username);
         game.incrementEnergyForEndTurn(username);
 
@@ -233,6 +250,7 @@ public class GameService {
             game.setStatus(GameStatus.COMPLETED);
             game.setCompletedDate(new Date());
             game.setWinner(username);
+            userService.incrementNumWins(username);
         }
 
         gameRepository.save(game);
@@ -268,9 +286,13 @@ public class GameService {
                     currentGame.getEnergyMap().get(username),
                     request.getCard().getCost());
         }
-        // check row col is empty
-        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
-            return "Card must be placed in an empty Cell";
+//        // check row col is empty
+//        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
+//            return "Card must be placed in an empty Cell";
+//        }
+        // check row col does not have enemy
+        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isFriendlyCell(username)) {
+            return "Card must be placed in a friendly or empty Cell";
         }
         // check row is within limit
         if (request.getRow() < currentGame.getMinTerritoryRowNum()) {

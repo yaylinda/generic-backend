@@ -1,16 +1,18 @@
 package yay.linda.genericbackend.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.model.FriendRequest;
+import yay.linda.genericbackend.model.FriendRequestDTO;
 import yay.linda.genericbackend.model.FriendRequestStatus;
-import yay.linda.genericbackend.model.PlayerActivityDTO;
 import yay.linda.genericbackend.model.PlayerDTO;
 import yay.linda.genericbackend.model.RequestFriendDTO;
 import yay.linda.genericbackend.model.RespondFriendDTO;
-import yay.linda.genericbackend.model.User;
+import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.FriendRequestRepository;
 import yay.linda.genericbackend.repository.UserRepository;
 
@@ -24,8 +26,13 @@ import java.util.stream.Collectors;
 @Service
 public class PlayerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlayerService.class);
+
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserRepository userRepository;
@@ -38,12 +45,14 @@ public class PlayerService {
 
     public List<PlayerDTO> getAllPlayers(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_PLAYERS_LIST);
 
         HashSet<String> friends = getFriends(sessionToken).stream()
                 .map(PlayerDTO::getUsername)
                 .collect(Collectors.toCollection(HashSet::new));
 
-        return userRepository.findAllByOrderByLastActiveDateDesc().stream()
+        List<PlayerDTO> otherPlayers = userRepository.findAllByOrderByLastActiveDateDesc().stream()
                 .filter(u -> !u.getUsername().equals(username))
                 .filter(p -> !friends.contains(p.getUsername()))
                 .map(u -> {
@@ -54,10 +63,16 @@ public class PlayerService {
                     return PlayerDTO.fromUser(u, requests0.isEmpty() && requests1.isEmpty());
                 })
                 .collect(Collectors.toList());
+
+        LOGGER.info("Other Players: {}", otherPlayers);
+
+        return otherPlayers;
     }
 
     public List<PlayerDTO> getFriends(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_FRIENDS_LIST);
 
         List<PlayerDTO> friends = new ArrayList<>();
 
@@ -77,28 +92,34 @@ public class PlayerService {
                 .map(u -> PlayerDTO.fromUser(u, false))
                 .collect(Collectors.toList()));
 
+        LOGGER.info("Friends of {}: {}", username, friends);
         return friends;
     }
 
 
-    public List<PlayerActivityDTO> getActivity(String sessionToken) {
+    public List<FriendRequestDTO> getFriendRequests(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_FRIEND_REQUEST_LIST);
 
-        List<PlayerActivityDTO> activities = new ArrayList<>();
+        List<FriendRequestDTO> friendRequests = new ArrayList<>();
 
-        activities.addAll(friendRequestRepository.findAllByRequester(username).stream()
-                .map(PlayerActivityDTO::fromFriendRequest)
+        friendRequests.addAll(friendRequestRepository.findAllByRequester(username).stream()
+                .map(FriendRequestDTO::fromFriendRequest)
                 .collect(Collectors.toList()));
 
-        activities.addAll(friendRequestRepository.findAllByRequestee(username).stream()
-                .map(PlayerActivityDTO::fromFriendRequest)
+        friendRequests.addAll(friendRequestRepository.findAllByRequestee(username).stream()
+                .map(FriendRequestDTO::fromFriendRequest)
                 .collect(Collectors.toList()));
 
-        return activities;
+        LOGGER.info("FriendRequests for {}: {}", username, friendRequests);
+        return friendRequests;
     }
 
     public void requestFriend(String sessionToken, RequestFriendDTO requestFriendDTO) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.REQUEST_FRIEND);
 
         FriendRequest friendRequest = FriendRequest.builder()
                 .requester(username)
@@ -107,6 +128,7 @@ public class PlayerService {
                 .status(FriendRequestStatus.REQUESTED.name())
                 .build();
 
+        LOGGER.info("Saving FriendRequest (request): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
         this.messagingTemplate.convertAndSend("/topic/friendRequestReceived/" + requestFriendDTO.getRequestee(), username);
@@ -114,6 +136,8 @@ public class PlayerService {
 
     public void respondFriend(String sessionToken, RespondFriendDTO respondFriendDTO) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.RESPOND_TO_FRIEND_REQUEST);
 
         Optional<FriendRequest> optionalFriendRequest = friendRequestRepository.findById(respondFriendDTO.getRequestId());
 
@@ -125,6 +149,7 @@ public class PlayerService {
         friendRequest.setResponseDate(new Date());
         friendRequest.setStatus(respondFriendDTO.getIsAccept() ? FriendRequestStatus.ACCEPTED.name() : FriendRequestStatus.DECLINED.name());
 
+        LOGGER.info("Saving FriendRequest (response): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
         this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequester(), username);

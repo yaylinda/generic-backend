@@ -41,6 +41,18 @@ public class Game {
     private Map<String, GameStats> gameStatsMap;
     private Map<String, List<Card>> endzoneMap;
 
+    public Game() {
+        this.boardMap = new HashMap<>();
+        this.transitionBoardMap = new HashMap<>();
+        this.previousBoardMap = new HashMap<>();
+        this.cardsMap = new HashMap<>();
+        this.pointsMap = new HashMap<>();
+        this.energyMap = new HashMap<>();
+        this.createdDate = new Date();
+        this.gameStatsMap = new HashMap<>();
+        this.endzoneMap = new HashMap<>();
+    }
+
     public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
@@ -121,6 +133,10 @@ public class Game {
         this.getEnergyMap().put(username, this.getEnergyMap().get(username) - cost);
     }
 
+    public void incrementEnergyUsed(String username, Double used) {
+        this.gameStatsMap.get(username).incrementEnergyUsed(used);
+    }
+
     /**
      *
      * @param username
@@ -137,6 +153,14 @@ public class Game {
 
     public void incrementNumCardsPlayed(String username) {
         this.gameStatsMap.get(username).incrementNumCardsPlayed();
+    }
+
+    public void incrementMightPlaced(String username, Integer might) {
+        this.gameStatsMap.get(username).incrementMightPlaced(might);
+    }
+
+    public void incrementAdvancementPoints(String username, Integer advancementPoints) {
+        this.gameStatsMap.get(username).incrementAdvancementPoints(advancementPoints);
     }
 
     /**
@@ -184,7 +208,9 @@ public class Game {
             for (int j = 0; j < numCols; j++) {
                 Cell cell = board.get(i).get(j);
                 if (cell.getCards().size() > 1) {
-                    cell.handleClash(username, opponentName);
+                    int advancementPoints = 0;
+                    cell.handleClash(username, opponentName, advancementPoints);
+                    this.incrementAdvancementPoints(username, advancementPoints);
                 }
             }
         }
