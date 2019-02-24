@@ -11,7 +11,7 @@ public class PlayerDTO {
     private String lastActiveDate;
     private String lastActivity;
     private Integer numWins;
-    private Integer numPlayed;
+    private Integer numGames;
     private Boolean canAdd;
 
     private PlayerDTO() {
@@ -24,7 +24,7 @@ public class PlayerDTO {
         playerDTO.lastActiveDate = SIMPLE_DATE_FORMAT.format(user.getLastActiveDate());
         playerDTO.lastActivity = user.getLastActivity();
         playerDTO.numWins = user.getNumWins();
-        playerDTO.numPlayed = user.getNumPlayed();
+        playerDTO.numGames = user.getNumGames();
         playerDTO.canAdd = canAdd;
         return playerDTO;
     }

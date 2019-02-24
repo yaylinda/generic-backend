@@ -25,7 +25,6 @@ public class GameDTO {
     private Double energy;
     private GameStatus status;
     private Integer opponentPoints;
-    private Integer numCardsPlayed;
     private Integer numRows;
     private Integer numCols;
     private String md5Hash;

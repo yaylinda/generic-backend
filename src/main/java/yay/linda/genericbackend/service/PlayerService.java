@@ -46,13 +46,13 @@ public class PlayerService {
     public List<PlayerDTO> getAllPlayers(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-        userService.updateActivity(username, UserActivity.GET_PLAYERS_LIST);
+//        userService.updateActivity(username, UserActivity.GET_PLAYERS_LIST);
 
         HashSet<String> friends = getFriends(sessionToken).stream()
                 .map(PlayerDTO::getUsername)
                 .collect(Collectors.toCollection(HashSet::new));
 
-        return userRepository.findAllByOrderByLastActiveDateDesc().stream()
+        List<PlayerDTO> otherPlayers = userRepository.findAllByOrderByLastActiveDateDesc().stream()
                 .filter(u -> !u.getUsername().equals(username))
                 .filter(p -> !friends.contains(p.getUsername()))
                 .map(u -> {
@@ -63,12 +63,16 @@ public class PlayerService {
                     return PlayerDTO.fromUser(u, requests0.isEmpty() && requests1.isEmpty());
                 })
                 .collect(Collectors.toList());
+
+        LOGGER.info("Other Players: {}", otherPlayers);
+
+        return otherPlayers;
     }
 
     public List<PlayerDTO> getFriends(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-        userService.updateActivity(username, UserActivity.GET_FRIENDS_LIST);
+//        userService.updateActivity(username, UserActivity.GET_FRIENDS_LIST);
 
         List<PlayerDTO> friends = new ArrayList<>();
 
@@ -88,6 +92,7 @@ public class PlayerService {
                 .map(u -> PlayerDTO.fromUser(u, false))
                 .collect(Collectors.toList()));
 
+        LOGGER.info("Friends of {}: {}", username, friends);
         return friends;
     }
 
@@ -95,7 +100,7 @@ public class PlayerService {
     public List<FriendRequestDTO> getFriendRequests(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-        userService.updateActivity(username, UserActivity.GET_FRIEND_REQUEST_LIST);
+//        userService.updateActivity(username, UserActivity.GET_FRIEND_REQUEST_LIST);
 
         List<FriendRequestDTO> friendRequests = new ArrayList<>();
 
@@ -107,6 +112,7 @@ public class PlayerService {
                 .map(FriendRequestDTO::fromFriendRequest)
                 .collect(Collectors.toList()));
 
+        LOGGER.info("FriendRequests for {}: {}", username, friendRequests);
         return friendRequests;
     }
 
@@ -122,6 +128,7 @@ public class PlayerService {
                 .status(FriendRequestStatus.REQUESTED.name())
                 .build();
 
+        LOGGER.info("Saving FriendRequest (request): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
         this.messagingTemplate.convertAndSend("/topic/friendRequestReceived/" + requestFriendDTO.getRequestee(), username);
@@ -142,6 +149,7 @@ public class PlayerService {
         friendRequest.setResponseDate(new Date());
         friendRequest.setStatus(respondFriendDTO.getIsAccept() ? FriendRequestStatus.ACCEPTED.name() : FriendRequestStatus.DECLINED.name());
 
+        LOGGER.info("Saving FriendRequest (response): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
         this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequester(), username);

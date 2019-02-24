@@ -48,7 +48,7 @@ public class GameService {
     public List<GameDTO> getGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
+//        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
         List<GameDTO> gameDTOs = games1.stream()
@@ -76,7 +76,7 @@ public class GameService {
     public List<GameDTO> getJoinableGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-        userService.updateActivity(username, UserActivity.GET_JOINABLE_GAMES_LIST);
+//        userService.updateActivity(username, UserActivity.GET_JOINABLE_GAMES_LIST);
 
         return getWaitingGames(username).stream()
                 .map(GameDTO::gameDTOForJoinableList)
@@ -87,6 +87,7 @@ public class GameService {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.JOIN_GAME);
+        userService.incrementNumGames(username);
 
         Game gameToJoin;
         if (StringUtils.isEmpty(gameId)) {
@@ -111,6 +112,7 @@ public class GameService {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.CREATE_GAME);
+        userService.incrementNumGames(username);
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
@@ -124,7 +126,7 @@ public class GameService {
 
         this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
 
-        // increment numPlayed for user
+        // increment numGames for user
         return new GameDTO(newGame, true);
     }
 
@@ -248,6 +250,7 @@ public class GameService {
             game.setStatus(GameStatus.COMPLETED);
             game.setCompletedDate(new Date());
             game.setWinner(username);
+            userService.incrementNumWins(username);
         }
 
         gameRepository.save(game);
