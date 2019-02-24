@@ -18,13 +18,18 @@ public class User {
     private String password;
     private String email;
     private Date createdDate;
-    private Date lastLogin;
+    private Date lastActiveDate;
+    private String lastActivity;
+    private Integer numWins;
+    private Integer numPlayed;
 
     public User(RegisterRequest registerRequest) {
         this.username = registerRequest.getUsername();
         this.password = registerRequest.getPassword();
         this.email = registerRequest.getEmail();
         this.createdDate = new Date();
-        this.lastLogin = new Date();
+        this.lastActiveDate = new Date();
+        this.numWins = 0;
+        this.numPlayed = 0;
     }
 }

@@ -20,6 +20,7 @@ application:
     numCols: 4
     numCardsInHand: 4
     maxPoints: 10
+    numTerritoryRows: 2
 
 ---
 

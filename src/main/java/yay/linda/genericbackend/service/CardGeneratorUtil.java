@@ -22,7 +22,6 @@ public class CardGeneratorUtil {
                 .movement(move)
                 .cost(calculateCostStat(might, move))
                 .numTurnsOnBoard(0)
-                .specialAbility("TBD")
                 .build(); // TODO v2 implement special ability
     }
 
@@ -37,7 +36,7 @@ public class CardGeneratorUtil {
     private static CardType randomizeCardType() {
         Random random = new Random();
         int randomInt = random.nextInt(100);
-        return randomInt <= 25 ? CardType.WALL : CardType.TROOP;
+        return randomInt <= 25 ? CardType.DEFENSE : CardType.OFFENSE;
     }
 
     private static int randomizeMightStat() {
@@ -46,7 +45,7 @@ public class CardGeneratorUtil {
 
     private static int randomizeMoveStat(CardType cardType) {
         int movement = 0;
-        if (cardType.equals(CardType.TROOP)) {
+        if (cardType.equals(CardType.OFFENSE)) {
             movement = 1;
         }
         return movement;
