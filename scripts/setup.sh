@@ -2,6 +2,8 @@ sudo su
 
 sudo yum update -y
 
+sudo yum install -y lsof
+
 sudo yum install -y git
 
 git clone https://github.com/yaylinda/generic-backend.git

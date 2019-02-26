@@ -4,7 +4,6 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
-import yay.linda.genericbackend.service.CardGeneratorUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,7 +81,7 @@ public class Game {
         this.previousBoardMap.put(player1, initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
-        this.cardsMap.put(player1, new ArrayList<>(CardGeneratorUtil.generateCards(player1, numCardsInHand)));
+        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, numCardsInHand)));
         this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = new Date();
         this.lastModifiedDate = new Date();
@@ -101,7 +100,7 @@ public class Game {
         this.previousBoardMap.put(player2, initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
-        this.cardsMap.put(player2, new ArrayList<>(CardGeneratorUtil.generateCards(player2, numCardsInHand)));
+        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, numCardsInHand)));
         this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = new Date();
         this.lastModifiedDate = new Date();

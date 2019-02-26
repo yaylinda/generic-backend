@@ -286,10 +286,6 @@ public class GameService {
                     currentGame.getEnergyMap().get(username),
                     request.getCard().getCost());
         }
-//        // check row col is empty
-//        if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isAvailable()) {
-//            return "Card must be placed in an empty Cell";
-//        }
         // check row col does not have enemy
         if (!currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).isFriendlyCell(username)) {
             return "Card must be placed in a friendly or empty Cell";
@@ -303,7 +299,7 @@ public class GameService {
     }
 
     private void drawCard(String username, Game game, int cardIndex) {
-        Card newCard = CardGeneratorUtil.generateCard(username);
+        Card newCard = Card.generateCard(username);
         LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
         game.getCardsMap().get(username).set(cardIndex, newCard);
     }
