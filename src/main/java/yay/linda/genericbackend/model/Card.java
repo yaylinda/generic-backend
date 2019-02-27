@@ -31,23 +31,62 @@ public class Card implements Comparable<Card> {
     protected String owner;
     protected Integer numTurnsOnBoard;
 
-    protected Card(String username) {
-        this.id = UUID.randomUUID().toString();
-        this.might = determineMightStat();
-        this.owner = username;
-        this.numTurnsOnBoard = 0;
+    private Card() {
+
     }
 
     public static Card generateCard(String username) {
         Random rand = new Random();
         int r = rand.nextInt(11) + 1;
         if (r == 1 || r == 2) {
-            return new WallCard(username);
+            return createWallCard(username);
         } else if (r == 3 || r == 4 || r == 5) {
-            return new HorizontalTroopCard(username);
+            return createHorizontalTroopCard(username);
         } else {
-            return new VerticalTroopCard(username);
+            return createVerticalTroopCard(username);
         }
+    }
+
+    public static Card createVerticalTroopCard(String username) {
+        Card card = new Card();
+        card.id = UUID.randomUUID().toString();
+        card.might = determineMightStat();
+        card.owner = username;
+        card.numTurnsOnBoard = 0;
+        card.type = CardType.TROOP;
+        card.movement = 1;
+        card.movementAxis = MovementAxis.VERTICAL;
+        card.movementDirection = MovementDirection.FORWARDS;
+        card.cost = calculateCostStat(card.might, card.movement);
+        return card;
+    }
+
+    public static Card createWallCard(String username) {
+        Card card = new Card();
+        card.id = UUID.randomUUID().toString();
+        card.might = determineMightStat();
+        card.owner = username;
+        card.numTurnsOnBoard = 0;
+        card.type = CardType.WALL;
+        card.cost = card.might / 2.0;
+        card.movement = 0;
+        card.movementAxis = MovementAxis.NONE;
+        card.movementDirection = MovementDirection.NONE;
+        return card;
+    }
+
+    public  static Card createHorizontalTroopCard(String username) {
+        Card card = new Card();
+        card.id = UUID.randomUUID().toString();
+        card.might = determineMightStat();
+        card.owner = username;
+        card.numTurnsOnBoard = 0;
+        card.type = CardType.DEFENSE;
+        card.movement = 1;
+        card.movementAxis = MovementAxis.HORIZONTAL;
+        card.movementDirection = randomizeDirection();
+        card.cost = calculateCostStat(card.might, card.movement);
+        return card;
     }
 
     public static List<Card> generateCards(String username, Integer num) {
@@ -88,12 +127,17 @@ public class Card implements Comparable<Card> {
         }
     }
 
-    protected static int determineMightStat() {
+    private static int determineMightStat() {
         Random r = new Random();
         return r.nextInt(11) + 1;
     }
 
-    protected static double calculateCostStat(int might, int move) {
+    private static double calculateCostStat(int might, int move) {
         return (might + move) / 2.0;
+    }
+
+    private static MovementDirection randomizeDirection() {
+        Random r = new Random();
+        return r.nextInt(2) == 1 ? MovementDirection.RIGHT : MovementDirection.LEFT;
     }
 }
