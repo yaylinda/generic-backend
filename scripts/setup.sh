@@ -21,13 +21,13 @@ sudo yum install -y java-1.8.0-openjdk-devel
 
 sudo yum install -y wget
 
-sudo wget http://mirrors.gigenet.com/apache/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz
+sudo wget http://mirrors.ibiblio.org/apache/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.tar.gz
 
-sudo tar -xvf apache-maven-3.6.0-bin.tar.gz
+sudo tar -xvf apache-maven-3.6.2-bin.tar.gz
 
-export PATH=/home/ec2-user/apache-maven-3.6.0/bin:$PATH
+export PATH=/home/ec2-user/apache-maven-3.6.2/bin:$PATH
 
-rm -rf apache-maven-3.6.0-bin.tar.gz
+rm -rf apache-maven-3.6.2-bin.tar.gz
 
 cd /home/ec2-user/generic-backend
 
