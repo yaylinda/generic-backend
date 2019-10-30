@@ -5,4 +5,4 @@ sudo service mongod start
 cd /home/ec2-user/generic-backend
 git checkout master
 git pull
-mvn spring-boot:run &
+mvn spring-boot:run
