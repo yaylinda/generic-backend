@@ -54,10 +54,10 @@ public class GameController {
         return ResponseEntity.ok(gameService.getJoinableGames(sessionToken));
     }
 
-    @GetMapping("/join")
+    @GetMapping("/join/{gameId}")
     public ResponseEntity<GameDTO> joinGame(
             @RequestHeader("Session-Token") String sessionToken,
-            @RequestParam("gameId") String gameId) {
+            @PathVariable("gameId") String gameId) {
         LOGGER.info("JOIN GAME: sessionToken={}, gameId={}", sessionToken, gameId);
         return ResponseEntity.ok(gameService.joinGame(sessionToken, gameId));
     }

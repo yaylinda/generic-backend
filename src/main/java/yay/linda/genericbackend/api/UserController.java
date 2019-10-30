@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.ok(userService.login(loginRequest));
     }
 
-    @PostMapping("/logout/{sessionToken}")
+    @GetMapping("/logout/{sessionToken}")
     public ResponseEntity<?> logout(@PathVariable("sessionToken") String sessionToken) {
         LOGGER.info("LOGOUT request: sessionToken={}", sessionToken);
         userService.logout(sessionToken);

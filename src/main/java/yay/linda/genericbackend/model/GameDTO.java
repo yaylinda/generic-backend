@@ -68,11 +68,15 @@ public class GameDTO {
         gameDTO.setId(game.getId());
         gameDTO.setOpponentName(game.getPlayer1());
         gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(game.getCreatedDate()));
+        gameDTO.setLastModifiedDate(SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate()));
         gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.getPlayer1sTurn())); // if player1 has ended turn after creating the game
+        gameDTO.setOpponentPoints(0);
+        gameDTO.setPoints(0);
+        gameDTO.setUsername("<TBD>");
         return gameDTO;
     }
 
-    private static boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
+    public static boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
         if (isPlayer1) {
             return isPlayer1sTurn;
         } else {

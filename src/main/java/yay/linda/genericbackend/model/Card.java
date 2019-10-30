@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Data
 @Builder
@@ -30,9 +29,10 @@ public class Card implements Comparable<Card> {
     protected Double cost;
     protected String owner;
     protected Integer numTurnsOnBoard;
+    protected Boolean shouldAdvance;
 
     private Card() {
-
+        this.shouldAdvance = true;
     }
 
     public static Card generateCard(String username) {
@@ -104,9 +104,10 @@ public class Card implements Comparable<Card> {
     }
 
     public boolean isQualifiedToAdvance(String username) {
-        return this.getType() == CardType.TROOP
+        return this.getType() != CardType.WALL
                 && this.owner.equals(username)
-                && this.getNumTurnsOnBoard() > 0;
+                && this.getNumTurnsOnBoard() > 0
+                && this.shouldAdvance;
     }
 
     @Override

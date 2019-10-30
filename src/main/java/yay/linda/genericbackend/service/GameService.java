@@ -173,7 +173,7 @@ public class GameService {
         }
 
         PutCardStatus putCardStatus;
-        String message = validatePutCardRequest(game, username, putCardRequest);
+        String message = validatePutCardRequest(game, username, isPlayer1, putCardRequest);
 
         if (StringUtils.isEmpty(message)) {
             LOGGER.info("PutCard request passed validation...");
@@ -278,7 +278,11 @@ public class GameService {
         return waitingGames;
     }
 
-    private String validatePutCardRequest(Game currentGame, String username, PutCardRequest request) {
+    private String validatePutCardRequest(Game currentGame, String username, boolean isPlayer1, PutCardRequest request) {
+        // check current turn
+        if (!GameDTO.calculateCurrentTurn(isPlayer1, currentGame.getPlayer1sTurn())) {
+            return "Cannot place card when it is not your turn";
+        }
         // check enough energy
         if (currentGame.getEnergyMap().get(username) < request.getCard().getCost()) {
             return String.format(

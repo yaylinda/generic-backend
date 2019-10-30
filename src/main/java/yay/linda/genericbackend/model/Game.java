@@ -184,19 +184,56 @@ public class Game {
                 Cell cell = board.get(i).get(j);
                 for (Card card : cell.getCards()) {
                     if (card.isQualifiedToAdvance(username)) {
-                        int newRow = i - card.getMovement();
-                        if (newRow < 0) { // card has moved into endzone and points have been scored
-                            this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
-                            this.endzoneMap.get(username).add(card);
-                        } else {
-                            Cell cellAtNewRow = board.get(newRow).get(j);
-                            cellAtNewRow.addCard(card);
+                        if (card.getMovementAxis() == MovementAxis.VERTICAL) {
+                            LOGGER.info("advancing for vertical... at {},{}", i, j);
+                            int newRow = i - card.getMovement();
+                            LOGGER.info("\tnewRow is now {}", newRow);
+                            if (newRow < 0) { // card has moved into endzone and points have been scored
+                                this.pointsMap.put(username, this.pointsMap.get(username) + card.getMight());
+                                this.endzoneMap.get(username).add(card);
+                            } else {
+                                Cell cellAtNewRow = board.get(newRow).get(j);
+                                cellAtNewRow.addCard(card);
+                            }
+                            cell.removeCard(card);
+                        } else if (card.getMovementAxis() == MovementAxis.HORIZONTAL) {
+                            LOGGER.info("advancing for horizontal... at {},{}", i, j);
+                            int newCol;
+
+                            if (card.getMovementDirection() == MovementDirection.RIGHT) {
+                                LOGGER.info("\tmovement dir is RIGHT");
+                                if (j == numCols - 1) {
+                                    LOGGER.info("\tcard is at edge of RIGHT side. going LEFT instead");
+                                    newCol = j - card.getMovement();
+                                    card.setMovementDirection(MovementDirection.LEFT);
+                                } else {
+                                    newCol = j + card.getMovement();
+                                }
+                            } else {
+                                LOGGER.info("\tmovement dir is LEFT");
+                                if (j == 0) {
+                                    LOGGER.info("\tcard is at edge of LEFT side. going RIGHT instead");
+                                    newCol = j + card.getMovement();
+                                    card.setMovementDirection(MovementDirection.RIGHT);
+                                } else {
+                                    newCol = j - card.getMovement();
+                                }
+                            }
+                            LOGGER.info("\tnewCol is now {}", newCol);
+
+                            card.setShouldAdvance(false);
+                            Cell cellAtNewCol = board.get(i).get(newCol);
+                            cellAtNewCol.addCard(card);
+                            cell.removeCard(card);
                         }
-                        cell.removeCard(card);
                     }
                 }
             }
         }
+
+        // reset shouldAdvance for each card
+        board.forEach(r -> r.forEach(c -> c.getIdToCardMap().values().forEach(cc -> cc.setShouldAdvance(true))));
+
         LOGGER.info("updating transition board for {} to {}", username, board);
         this.getTransitionBoardMap().put(username, board);
     }
