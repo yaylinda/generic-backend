@@ -45,7 +45,7 @@ public class GameDTO {
         this.transitionBoard = convertBoardToCellDTO(game.getTransitionBoardMap().get(username));
         this.previousBoard = convertBoardToCellDTO(game.getPreviousBoardMap().get(username));
         this.cards = game.getCardsMap().get(username);
-        this.currentTurn = calculateCurrentTurn(isPlayer1, game.getPlayer1sTurn());
+        this.currentTurn = calculateCurrentTurn(isPlayer1, game.getPlayer1sTurn(), game.getStatus());
         this.points = game.getPointsMap().get(username);
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
@@ -69,14 +69,17 @@ public class GameDTO {
         gameDTO.setOpponentName(game.getPlayer1());
         gameDTO.setCreatedDate(SIMPLE_DATE_FORMAT.format(game.getCreatedDate()));
         gameDTO.setLastModifiedDate(SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate()));
-        gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.getPlayer1sTurn())); // if player1 has ended turn after creating the game
+        gameDTO.setCurrentTurn(calculateCurrentTurn(false, game.getPlayer1sTurn(), game.getStatus())); // if player1 has ended turn after creating the game
         gameDTO.setOpponentPoints(0);
         gameDTO.setPoints(0);
         gameDTO.setUsername("<TBD>");
         return gameDTO;
     }
 
-    public static boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn) {
+    public static boolean calculateCurrentTurn(boolean isPlayer1, boolean isPlayer1sTurn, GameStatus status) {
+        if (status == GameStatus.COMPLETED) {
+            return false;
+        }
         if (isPlayer1) {
             return isPlayer1sTurn;
         } else {
