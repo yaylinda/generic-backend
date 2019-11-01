@@ -280,7 +280,7 @@ public class GameService {
 
     private String validatePutCardRequest(Game currentGame, String username, boolean isPlayer1, PutCardRequest request) {
         // check current turn
-        if (!GameDTO.calculateCurrentTurn(isPlayer1, currentGame.getPlayer1sTurn())) {
+        if (!GameDTO.calculateCurrentTurn(isPlayer1, currentGame.getPlayer1sTurn(), currentGame.getStatus())) {
             return "Cannot place card when it is not your turn";
         }
         // check enough energy
