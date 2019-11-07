@@ -36,6 +36,8 @@ public class GameDTO {
     private GameStats gameStats;
     private List<Card> endzone;
     private List<Card> opponentEndzone;
+    private Boolean useAdvancedConfigs;
+    private AdvancedGameConfigurationDTO advancedGameConfigs;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -61,6 +63,8 @@ public class GameDTO {
         this.gameStats = game.getGameStatsMap().get(username);
         this.endzone = game.getEndzoneMap().getOrDefault(username, new ArrayList<>());
         this.opponentEndzone = game.getEndzoneMap().getOrDefault(opponentName, new ArrayList<>());
+        this.useAdvancedConfigs = game.getUseAdvancedConfigs();
+        this.advancedGameConfigs = game.getAdvancedGameConfigs();
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {

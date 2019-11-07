@@ -39,6 +39,8 @@ public class Game {
     private String winner;
     private Map<String, GameStats> gameStatsMap;
     private Map<String, List<Card>> endzoneMap;
+    private Boolean useAdvancedConfigs;
+    private AdvancedGameConfigurationDTO advancedGameConfigs;
 
     public Game() {
         this.boardMap = new HashMap<>();
@@ -52,7 +54,8 @@ public class Game {
         this.endzoneMap = new HashMap<>();
     }
 
-    public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows) {
+    public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows,
+                Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
@@ -66,13 +69,15 @@ public class Game {
         this.minTerritoryRowNum = numRows - numTerritoryRows;
         this.gameStatsMap = new HashMap<>();
         this.endzoneMap = new HashMap<>();
+        this.useAdvancedConfigs = useAdvancedConfigs;
+        this.advancedGameConfigs = advancedGameConfigurationDTO;
     }
 
     /**
      *
      * @param player1
      */
-    public void createGameForPlayer1(String player1) {
+    public void createGameForPlayer1(String player1, Map<CardType, Double> cardDropRates) {
         this.player1 = player1;
         this.player2 = "<TBD>";
         this.player1sTurn = true;
@@ -81,7 +86,7 @@ public class Game {
         this.previousBoardMap.put(player1, initializeBoard(numRows, numCols));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
-        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, numCardsInHand)));
+        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, numCardsInHand, cardDropRates)));
         this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = new Date();
         this.lastModifiedDate = new Date();
@@ -93,14 +98,14 @@ public class Game {
      *
      * @param player2
      */
-    public void addPlayer2ToGame(String player2) {
+    public void addPlayer2ToGame(String player2, Map<CardType, Double> cardDropRates) {
         this.player2 = player2;
         this.boardMap.put(player2, transpose(this.boardMap.get(this.player1)));
         this.transitionBoardMap.put(player2, initializeBoard(numRows, numCols));
         this.previousBoardMap.put(player2, initializeBoard(numRows, numCols));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
-        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, numCardsInHand)));
+        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, numCardsInHand, cardDropRates)));
         this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = new Date();
         this.lastModifiedDate = new Date();

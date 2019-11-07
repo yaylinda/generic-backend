@@ -49,9 +49,9 @@ public class UserService {
             throw RegisterException.usernameTaken(registerRequest.getUsername());
         }
 
-        if (emailExists(registerRequest.getEmail())) {
-            throw RegisterException.emailTaken(registerRequest.getEmail());
-        }
+//        if (emailExists(registerRequest.getEmail())) {
+//            throw RegisterException.emailTaken(registerRequest.getEmail());
+//        }
 
         createUser(registerRequest);
 

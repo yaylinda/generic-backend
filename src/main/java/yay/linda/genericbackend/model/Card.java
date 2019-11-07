@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -35,7 +36,10 @@ public class Card implements Comparable<Card> {
         this.shouldAdvance = true;
     }
 
-    public static Card generateCard(String username) {
+    public static Card generateCard(String username, Map<CardType, Double> cardDropRates) {
+
+        // TODO - generate card according to weights
+
         Random rand = new Random();
         int r = rand.nextInt(11) + 1;
         if (r == 1 || r == 2) {
@@ -89,10 +93,10 @@ public class Card implements Comparable<Card> {
         return card;
     }
 
-    public static List<Card> generateCards(String username, Integer num) {
+    public static List<Card> generateCards(String username, Integer num, Map<CardType, Double> cardDropRates) {
         List<Card> cards = new ArrayList<>();
         for (int i = 0; i < num; i++ ) {
-            cards.add(generateCard(username));
+            cards.add(generateCard(username, cardDropRates));
         }
         return cards;
     }

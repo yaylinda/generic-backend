@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
 import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
@@ -64,9 +65,11 @@ public class GameController {
 
     @PostMapping("/new")
     public ResponseEntity<GameDTO> createGame(
-            @RequestHeader("Session-Token") String sessionToken) {
-        LOGGER.info("CREATE GAME: sessionToken={}", sessionToken);
-        return ResponseEntity.ok(gameService.createGame(sessionToken));
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestParam(value = "useAdvancedConfigs", required = false, defaultValue = "false") Boolean useAdvancedConfigs,
+            @RequestBody AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+        LOGGER.info("CREATE GAME: sessionToken={}, advancedGameConfigurationDTO={}", sessionToken, advancedGameConfigurationDTO);
+        return ResponseEntity.ok(gameService.createGame(sessionToken, useAdvancedConfigs, advancedGameConfigurationDTO));
     }
 
     @PostMapping("/invite")
