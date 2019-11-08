@@ -116,12 +116,7 @@ public class GameService {
         // TODO - validate configs
 
         if (useAdvancedConfigs) {
-            String validationErrMsg = this.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
-            if (StringUtils.isEmpty(validationErrMsg)) {
-                LOGGER.info("AdvancedGameConfigurationDTO passed validation");
-            } else {
-                throw new AdvGameConfigException(validationErrMsg);
-            }
+            this.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
         }
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
@@ -318,24 +313,28 @@ public class GameService {
             return "Card must be placed on your Territory";
         }
         //check not too many cards are in cell
-        if (currentGame.getUseAdvancedConfigs() && currentGame.getAdvancedGameConfigs().getMaxCardsPerCell() >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
-            return String.format("Card cannot be placed in a cell that is occupied by [%d] cards. (Check Advanced Game Configurations)", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
+        if (currentGame.getUseAdvancedConfigs()) {
+            if (currentGame.getAdvancedGameConfigs().getMaxCardsPerCell() >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
+                return String.format("Card cannot be placed in a cell that is occupied by [%d] cards. (Check Advanced Game Configurations)", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
+            }
+        } else {
+            if (AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
+                return String.format("Card cannot be placed in a cell that is occupied by [%d] cards.", AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL);
+            }
         }
 
         return "";
     }
 
-    private String validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+    public void validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
         if (advancedGameConfigurationDTO.getMaxCardsPerCell() < 1) {
-            return String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell());
+            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell()));
         }
 
         double ratesSum = advancedGameConfigurationDTO.getDropRates().values().stream().reduce(0.0, Double::sum);
-        if (ratesSum < 100) {
-            return String.format("Error in Advanced Game Configurations :: getDropRates must add up to 100. Current value: %f", ratesSum);
+        if (ratesSum < 1 || ratesSum > 1) {
+            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getDropRates must add up to 1.0. Current value: %f", ratesSum));
         }
-
-        return "";
     }
 
     private void drawCard(String username, Game game, int cardIndex) {

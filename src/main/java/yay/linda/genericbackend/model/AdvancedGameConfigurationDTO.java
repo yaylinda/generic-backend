@@ -16,9 +16,11 @@ public class AdvancedGameConfigurationDTO {
 
     public static Map<CardType, Double> DEFAULT_DROP_RATES() {
         Map<CardType, Double> dropRates = new HashMap<>();
-        dropRates.put(CardType.WALL, 20.0);
-        dropRates.put(CardType.DEFENSE, 30.0);
-        dropRates.put(CardType.TROOP, 50.0);
+        dropRates.put(CardType.WALL, 0.2);
+        dropRates.put(CardType.DEFENSE, 0.3);
+        dropRates.put(CardType.TROOP, 0.5);
         return dropRates;
     }
+
+    public static Integer DEFAULT_MAX_CARDS_PER_CELL = 1;
 }

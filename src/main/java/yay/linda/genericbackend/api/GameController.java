@@ -63,6 +63,15 @@ public class GameController {
         return ResponseEntity.ok(gameService.joinGame(sessionToken, gameId));
     }
 
+    @PostMapping("/new/validate")
+    public ResponseEntity<String> validateAdvancedGameConfigs(
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestBody AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+        LOGGER.info("VALIDATE ADV GAME CONFIG: sessionToken={}, advancedGameConfigurationDTO={}", sessionToken, advancedGameConfigurationDTO);
+        gameService.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
+        return ResponseEntity.ok("OK");
+    }
+
     @PostMapping("/new")
     public ResponseEntity<GameDTO> createGame(
             @RequestHeader("Session-Token") String sessionToken,
