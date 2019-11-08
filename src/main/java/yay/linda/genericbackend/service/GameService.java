@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import yay.linda.genericbackend.api.error.AdvGameConfigException;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
@@ -21,6 +22,7 @@ import yay.linda.genericbackend.model.PutCardStatus;
 import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
+import javax.xml.bind.ValidationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -112,6 +114,16 @@ public class GameService {
 
     public GameDTO createGame(String sessionToken, Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
         // TODO - validate configs
+
+        if (useAdvancedConfigs) {
+            String validationErrMsg = this.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
+            if (StringUtils.isEmpty(validationErrMsg)) {
+                LOGGER.info("AdvancedGameConfigurationDTO passed validation");
+            } else {
+                throw new AdvGameConfigException(validationErrMsg);
+            }
+        }
+
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.CREATE_GAME);
@@ -197,7 +209,6 @@ public class GameService {
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
             }
 
-            // TODO - use game configs for card drop rate
             drawCard(username, game, putCardRequest.getCardIndex());
 
             gameRepository.save(game);
@@ -308,7 +319,20 @@ public class GameService {
         }
         //check not too many cards are in cell
         if (currentGame.getUseAdvancedConfigs() && currentGame.getAdvancedGameConfigs().getMaxCardsPerCell() >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
-            return String.format("Card cannot be placed in a cell that is occupied by [%d] cards. (AdvGameConfig)", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
+            return String.format("Card cannot be placed in a cell that is occupied by [%d] cards. (Check Advanced Game Configurations)", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
+        }
+
+        return "";
+    }
+
+    private String validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+        if (advancedGameConfigurationDTO.getMaxCardsPerCell() < 1) {
+            return String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell());
+        }
+
+        double ratesSum = advancedGameConfigurationDTO.getDropRates().values().stream().reduce(0.0, Double::sum);
+        if (ratesSum < 100) {
+            return String.format("Error in Advanced Game Configurations :: getDropRates must add up to 100. Current value: %f", ratesSum);
         }
 
         return "";
