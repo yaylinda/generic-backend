@@ -77,6 +77,8 @@ public class GameDTO {
         gameDTO.setOpponentPoints(0);
         gameDTO.setPoints(0);
         gameDTO.setUsername("<TBD>");
+        gameDTO.setUseAdvancedConfigs(game.getUseAdvancedConfigs());
+        gameDTO.setAdvancedGameConfigs(game.getAdvancedGameConfigs());
         return gameDTO;
     }
 

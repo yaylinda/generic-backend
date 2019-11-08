@@ -80,7 +80,6 @@ public class GameService {
     public List<GameDTO> getJoinableGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
-//        userService.updateActivity(username, UserActivity.GET_JOINABLE_GAMES_LIST);
 
         return getWaitingGames(username).stream()
                 .map(GameDTO::gameDTOForJoinableList)
@@ -314,12 +313,12 @@ public class GameService {
         }
         //check not too many cards are in cell
         if (currentGame.getUseAdvancedConfigs()) {
-            if (currentGame.getAdvancedGameConfigs().getMaxCardsPerCell() >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
-                return String.format("Card cannot be placed in a cell that is occupied by [%d] cards. (Check Advanced Game Configurations)", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
+            if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getAdvancedGameConfigs().getMaxCardsPerCell()) {
+                return String.format("This cell is at maximum capacity ([%d] cards). Check Advanced Game Configurations.", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
             }
         } else {
-            if (AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL >= currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size()) {
-                return String.format("Card cannot be placed in a cell that is occupied by [%d] cards.", AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL);
+            if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL) {
+                return String.format("This cell is at maximum capacity ([%d] cards).", AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL);
             }
         }
 
