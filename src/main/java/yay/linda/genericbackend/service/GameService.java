@@ -112,7 +112,6 @@ public class GameService {
     }
 
     public GameDTO createGame(String sessionToken, Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-        // TODO - validate configs
 
         if (useAdvancedConfigs) {
             this.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
@@ -312,7 +311,7 @@ public class GameService {
             return "Card must be placed on your Territory";
         }
         //check not too many cards are in cell
-        if (currentGame.getUseAdvancedConfigs()) {
+        if (currentGame.getUseAdvancedConfigs() != null && currentGame.getUseAdvancedConfigs()) {
             if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getAdvancedGameConfigs().getMaxCardsPerCell()) {
                 return String.format("This cell is at maximum capacity ([%d] cards). Check Advanced Game Configurations.", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
             }
