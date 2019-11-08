@@ -37,14 +37,10 @@ public class Card implements Comparable<Card> {
     }
 
     public static Card generateCard(String username, Map<CardType, Double> cardDropRates) {
-
-        // TODO - generate card according to weights
-
-        Random rand = new Random();
-        int r = rand.nextInt(11) + 1;
-        if (r == 1 || r == 2) {
+        double rand = Math.random();
+        if (rand >= 0 && rand < cardDropRates.get(CardType.WALL)) {
             return createWallCard(username);
-        } else if (r == 3 || r == 4 || r == 5) {
+        } else if (rand >= cardDropRates.get(CardType.WALL) && rand < cardDropRates.get(CardType.WALL) + cardDropRates.get(CardType.DEFENSE)) {
             return createHorizontalTroopCard(username);
         } else {
             return createVerticalTroopCard(username);
