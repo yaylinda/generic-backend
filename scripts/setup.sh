@@ -42,13 +42,3 @@ sudo cp /home/ec2-user/generic-backend/scripts/start-app-dev.service /etc/system
 sudo systemctl enable start-app-dev
 
 sudo systemctl start start-app-dev
-
-sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-master.service
-
-sudo chmod u+x /home/ec2-user/generic-backend/scripts/start-app-master.sh
-
-sudo cp /home/ec2-user/generic-backend/scripts/start-app-master.service /etc/systemd/system/start-app-master.service
-
-sudo systemctl enable start-app-master
-
-sudo systemctl start start-app-master
