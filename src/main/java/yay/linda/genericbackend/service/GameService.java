@@ -336,6 +336,10 @@ public class GameService {
     }
 
     private void drawCard(String username, Game game, int cardIndex) {
+        if (game.getUseAdvancedConfigs() == null) {
+            game.setUseAdvancedConfigs(false);
+        }
+
         Card newCard = Card.generateCard(username, game.getUseAdvancedConfigs() ? game.getAdvancedGameConfigs().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
         LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
         game.getCardsMap().get(username).set(cardIndex, newCard);
