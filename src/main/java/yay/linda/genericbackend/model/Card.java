@@ -31,9 +31,11 @@ public class Card implements Comparable<Card> {
     protected String owner;
     protected Integer numTurnsOnBoard;
     protected Boolean shouldAdvance;
+    protected Boolean clicked;
 
     private Card() {
         this.shouldAdvance = true;
+        this.clicked = false;
     }
 
     public static Card generateCard(String username, Map<CardType, Double> cardDropRates) {
