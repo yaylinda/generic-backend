@@ -1,6 +1,5 @@
 package yay.linda.genericbackend.service;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import yay.linda.genericbackend.model.PutCardStatus;
 import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
-import javax.xml.bind.ValidationException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -170,7 +169,7 @@ public class GameService {
         userService.updateActivity(username, UserActivity.PUT_CARD);
 
         Game game = getGameById(gameId);
-        game.setLastModifiedDate(new Date());
+        game.setLastModifiedDate(Date.from(Instant.now()));
         LOGGER.info("Got game: {}", game);
 
         boolean isPlayer1;
@@ -225,7 +224,7 @@ public class GameService {
         userService.updateActivity(username, UserActivity.END_TURN);
 
         Game game = getGameById(gameId);
-        game.setLastModifiedDate(new Date());
+        game.setLastModifiedDate(Date.from(Instant.now()));
         LOGGER.info("Got game: {}", game);
 
         boolean isPlayer1;
@@ -260,7 +259,7 @@ public class GameService {
 
         if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
             game.setStatus(GameStatus.COMPLETED);
-            game.setCompletedDate(new Date());
+            game.setCompletedDate(Date.from(Instant.now()));
             game.setWinner(username);
             userService.incrementNumWins(username);
         }

@@ -16,6 +16,7 @@ import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.FriendRequestRepository;
 import yay.linda.genericbackend.repository.UserRepository;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -124,7 +125,7 @@ public class PlayerService {
         FriendRequest friendRequest = FriendRequest.builder()
                 .requester(username)
                 .requestee(requestFriendDTO.getRequestee())
-                .requestDate(new Date())
+                .requestDate(Date.from(Instant.now()))
                 .status(FriendRequestStatus.REQUESTED.name())
                 .build();
 
@@ -146,7 +147,7 @@ public class PlayerService {
         }
 
         FriendRequest friendRequest = optionalFriendRequest.get();
-        friendRequest.setResponseDate(new Date());
+        friendRequest.setResponseDate(Date.from(Instant.now()));
         friendRequest.setStatus(respondFriendDTO.getIsAccept() ? FriendRequestStatus.ACCEPTED.name() : FriendRequestStatus.DECLINED.name());
 
         LOGGER.info("Saving FriendRequest (response): {}", friendRequest);

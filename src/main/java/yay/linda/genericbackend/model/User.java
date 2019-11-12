@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Data
@@ -27,8 +28,8 @@ public class User {
         this.username = registerRequest.getUsername();
         this.password = registerRequest.getPassword();
         this.email = registerRequest.getEmail();
-        this.createdDate = new Date();
-        this.lastActiveDate = new Date();
+        this.createdDate = Date.from(Instant.now());
+        this.lastActiveDate = Date.from(Instant.now());
         this.numWins = 0;
         this.numGames = 0;
     }

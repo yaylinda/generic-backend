@@ -15,6 +15,7 @@ import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.repository.UserRepository;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -88,7 +89,7 @@ public class UserService {
     public void updateActivity(String username, UserActivity userActivity) {
         LOGGER.info("Updating lastActiveDate for {}, lastActivity={}", username, userActivity);
         userRepository.findByUsername(username).ifPresent(u -> {
-            u.setLastActiveDate(new Date());
+            u.setLastActiveDate(Date.from(Instant.now()));
             u.setLastActivity(userActivity.name());
             userRepository.save(u);
         });

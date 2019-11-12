@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class Game {
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
-        this.createdDate = new Date();
+        this.createdDate = Date.from(Instant.now());
         this.gameStatsMap = new HashMap<>();
         this.endzoneMap = new HashMap<>();
     }
@@ -62,7 +63,7 @@ public class Game {
         this.cardsMap = new HashMap<>();
         this.pointsMap = new HashMap<>();
         this.energyMap = new HashMap<>();
-        this.createdDate = new Date();
+        this.createdDate = Date.from(Instant.now());
         this.numRows = numRows;
         this.numCols = numCols;
         this.numCardsInHand = numCardsInHand;
@@ -88,8 +89,8 @@ public class Game {
         this.energyMap.put(player1, 1.0);
         this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, numCardsInHand, cardDropRates)));
         this.gameStatsMap.put(player1, new GameStats());
-        this.createdDate = new Date();
-        this.lastModifiedDate = new Date();
+        this.createdDate = Date.from(Instant.now());
+        this.lastModifiedDate = Date.from(Instant.now());
         this.status = GameStatus.WAITING_PLAYER_2;
         this.endzoneMap.put(player1, new ArrayList<>());
     }
@@ -107,8 +108,8 @@ public class Game {
         this.energyMap.put(player2, 2.0);
         this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, numCardsInHand, cardDropRates)));
         this.gameStatsMap.put(player2, new GameStats());
-        this.player2JoinTime = new Date();
-        this.lastModifiedDate = new Date();
+        this.player2JoinTime = Date.from(Instant.now());
+        this.lastModifiedDate = Date.from(Instant.now());
         this.status = GameStatus.IN_PROGRESS;
         this.endzoneMap.put(player2, new ArrayList<>());
     }
