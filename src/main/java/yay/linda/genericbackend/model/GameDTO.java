@@ -3,7 +3,9 @@ package yay.linda.genericbackend.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
@@ -38,6 +40,7 @@ public class GameDTO {
     private List<Card> opponentEndzone;
     private Boolean useAdvancedConfigs;
     private AdvancedGameConfigurationDTO advancedGameConfigs;
+    private String currentTimestamp;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -65,6 +68,7 @@ public class GameDTO {
         this.opponentEndzone = game.getEndzoneMap().getOrDefault(opponentName, new ArrayList<>());
         this.useAdvancedConfigs = game.getUseAdvancedConfigs();
         this.advancedGameConfigs = game.getAdvancedGameConfigs();
+        this.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {
@@ -79,6 +83,7 @@ public class GameDTO {
         gameDTO.setUsername("<TBD>");
         gameDTO.setUseAdvancedConfigs(game.getUseAdvancedConfigs());
         gameDTO.setAdvancedGameConfigs(game.getAdvancedGameConfigs());
+        gameDTO.setCurrentTimestamp(SIMPLE_DATE_FORMAT.format(Date.from(Instant.now())));
         return gameDTO;
     }
 
