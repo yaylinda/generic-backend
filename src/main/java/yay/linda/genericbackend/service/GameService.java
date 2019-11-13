@@ -11,6 +11,7 @@ import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
 import yay.linda.genericbackend.model.Card;
+import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
 import yay.linda.genericbackend.model.Game;
 import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.GameStatus;
@@ -48,25 +49,13 @@ public class GameService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public List<GameDTO> getGames(String sessionToken) {
-        String username = sessionService.getUsernameFromSessionToken(sessionToken);
-        LOGGER.info("Obtained username={} from sessionToken", username);
-//        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
-
-        List<Game> games1 = gameRepository.findGamesByPlayer1(username);
-        List<GameDTO> gameDTOs = games1.stream()
-                .map(g -> new GameDTO(g, true))
-                .collect(Collectors.toList());
-
-        List<Game> games2 = gameRepository.findGamesByPlayer2(username);
-        gameDTOs.addAll(games2.stream()
-                .map(g -> new GameDTO(g, false))
-                .collect(Collectors.toList()));
-
-        LOGGER.info("{} has {} active games", username, gameDTOs.size());
-        return gameDTOs;
-    }
-
+    /**
+     * Get one Game by gameId
+     *
+     * @param sessionToken
+     * @param gameId
+     * @return
+     */
     public GameDTO getGameById(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -76,6 +65,39 @@ public class GameService {
         return new GameDTO(game, game.getPlayer1().equals(username));
     }
 
+    /**
+     * Get list of games that a user is part of
+     *
+     * @param sessionToken
+     * @return
+     */
+    public List<GameDTO> getGames(String sessionToken) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+
+        List<Game> games1 = gameRepository.findGamesByPlayer1(username);
+        List<GameDTO> gameDTOs = games1.stream()
+                .map(g -> new GameDTO(g, true))
+                .collect(Collectors.toList());
+
+        LOGGER.info("Obtained {} games where {} is Player1", games1.size(), username);
+
+        List<Game> games2 = gameRepository.findGamesByPlayer2(username);
+        gameDTOs.addAll(games2.stream()
+                .map(g -> new GameDTO(g, false))
+                .collect(Collectors.toList()));
+
+        LOGGER.info("Obtained {} games where {} is Player2", games2.size(), username);
+
+        return gameDTOs;
+    }
+
+    /**
+     * Get list of games that are waiting for player2
+     *
+     * @param sessionToken
+     * @return
+     */
     public List<GameDTO> getJoinableGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -85,28 +107,50 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Create a new game (if no other games are available), or join an existing one
+     *
+     * @param sessionToken
+     * @return
+     */
+    public CreateJoinGameResponseDTO createOrJoinGame(String sessionToken) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+
+        CreateJoinGameResponseDTO response = new CreateJoinGameResponseDTO();
+
+        GameDTO gameDTO;
+
+        List<Game> waitingGames = getWaitingGames(username);
+        if (waitingGames.isEmpty()) {
+            LOGGER.info("No available games for {} to join... creating...", username);
+            gameDTO = createGame(sessionToken, false, new AdvancedGameConfigurationDTO());
+            response.setCreateOrJoin("CREATE");
+        } else {
+            LOGGER.info("Found available game {} to join, gameId={}", username, waitingGames.get(0).getId());
+            gameDTO = joinGame(sessionToken, waitingGames.get(0).getId());
+            response.setCreateOrJoin("JOIN");
+        }
+
+        response.setGame(gameDTO);
+
+        return response;
+    }
+
     public GameDTO joinGame(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.JOIN_GAME);
         userService.incrementNumGames(username);
 
-        Game gameToJoin;
-        if (StringUtils.isEmpty(gameId)) {
-            List<Game> waitingGames = getWaitingGames(username);
-            if (waitingGames.isEmpty()) {
-                throw new NotFoundException("There are no waiting games to join");
-            }
-            gameToJoin = waitingGames.get(0);
-        } else {
-            gameToJoin = getGameById(gameId);
-        }
+        Game gameToJoin = getGameById(gameId);
 
         gameToJoin.addPlayer2ToGame(username, gameToJoin.getUseAdvancedConfigs() ? gameToJoin.getAdvancedGameConfigs().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
 
+        gameRepository.save(gameToJoin);
+        LOGGER.info("Found game with id={} for {} to join", gameId, username);
         this.messagingTemplate.convertAndSend("/topic/player2Joined/" + gameToJoin.getPlayer1(), gameToJoin.getId());
 
-        gameRepository.save(gameToJoin);
         return new GameDTO(gameToJoin, false);
     }
 
@@ -132,12 +176,12 @@ public class GameService {
         newGame.createGameForPlayer1(username, useAdvancedConfigs ? advancedGameConfigurationDTO.getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
 
         gameRepository.save(newGame);
-
+        LOGGER.info("Created new game for {} with gameId={}", username, newGame.getId());
         this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
 
-        // increment numGames for user
         return new GameDTO(newGame, true);
     }
+
 
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
@@ -284,6 +328,7 @@ public class GameService {
         List<Game> waitingGames = gameRepository.findGamesByStatusOrderByCreatedDate(GameStatus.WAITING_PLAYER_2.name())
                 .stream()
                 .filter(g -> !g.getPlayer1().equals(username))
+                .filter(g -> !g.getPlayer1sTurn())
                 .collect(Collectors.toList());
         LOGGER.info("Obtained {} waiting games (not created by {})", waitingGames.size(), username);
         return waitingGames;

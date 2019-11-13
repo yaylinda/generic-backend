@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
+import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
 import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.InviteToGameDTO;
 import yay.linda.genericbackend.model.PutCardRequest;
@@ -61,6 +62,13 @@ public class GameController {
             @PathVariable("gameId") String gameId) {
         LOGGER.info("JOIN GAME: sessionToken={}, gameId={}", sessionToken, gameId);
         return ResponseEntity.ok(gameService.joinGame(sessionToken, gameId));
+    }
+
+    @GetMapping("/createOrJoin")
+    public ResponseEntity<CreateJoinGameResponseDTO> createOrJoinGame(
+            @RequestHeader("Session-Token") String sessionToken) {
+        LOGGER.info("CREATE OR GAME: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(gameService.createOrJoinGame(sessionToken));
     }
 
     @PostMapping("/new/validate")
