@@ -23,6 +23,8 @@ import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +90,8 @@ public class GameService {
                 .collect(Collectors.toList()));
 
         LOGGER.info("Obtained {} games where {} is Player2", games2.size(), username);
+
+        Collections.sort(gameDTOs);
 
         return gameDTOs;
     }

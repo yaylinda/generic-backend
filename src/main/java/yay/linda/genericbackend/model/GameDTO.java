@@ -13,7 +13,7 @@ import static yay.linda.genericbackend.model.Constants.md5Hash;
 
 @Data
 @NoArgsConstructor
-public class GameDTO {
+public class GameDTO implements Comparable<GameDTO> {
 
     private String id;
     private String username;
@@ -108,5 +108,10 @@ public class GameDTO {
             result.add(cellDTOs);
         }
         return result;
+    }
+
+    @Override
+    public int compareTo(GameDTO o) {
+        return this.getLastModifiedDate().compareTo(o.getLastModifiedDate()) * -1;
     }
 }
