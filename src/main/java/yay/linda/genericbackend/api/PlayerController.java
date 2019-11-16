@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,11 +32,18 @@ public class PlayerController {
     @Autowired
     private PlayerService playerService;
 
-    @GetMapping("")
+    @GetMapping("/all")
     public ResponseEntity<List<PlayerDTO>> getAllPlayers(
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET PLAYERS from sessionToken request: sessionToken={}", sessionToken);
         return ResponseEntity.ok(playerService.getAllPlayers(sessionToken));
+    }
+
+    @GetMapping("/one")
+    public ResponseEntity<PlayerDTO> getOnePlayer(
+            @RequestHeader("Session-Token") String sessionToken) {
+        LOGGER.info("GET PLAYER from sessionToken request: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(playerService.getOnePlayer(sessionToken));
     }
 
     @GetMapping("/friends")

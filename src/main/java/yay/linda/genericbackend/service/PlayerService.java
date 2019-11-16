@@ -12,6 +12,7 @@ import yay.linda.genericbackend.model.FriendRequestStatus;
 import yay.linda.genericbackend.model.PlayerDTO;
 import yay.linda.genericbackend.model.RequestFriendDTO;
 import yay.linda.genericbackend.model.RespondFriendDTO;
+import yay.linda.genericbackend.model.User;
 import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.FriendRequestRepository;
 import yay.linda.genericbackend.repository.UserRepository;
@@ -69,6 +70,21 @@ public class PlayerService {
 
         return otherPlayers;
     }
+
+    public PlayerDTO getOnePlayer(String sessionToken) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.GET_PROFILE_INFO);
+
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isPresent()) {
+            return PlayerDTO.fromUser(optionalUser.get(), false);
+        } else {
+            throw new NotFoundException(String.format("Unknown username, '%s'", username));
+        }
+    }
+
 
     public List<PlayerDTO> getFriends(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);

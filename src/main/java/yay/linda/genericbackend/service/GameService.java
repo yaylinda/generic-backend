@@ -76,6 +76,7 @@ public class GameService {
     public List<GameDTO> getGames(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
+//        userService.updateActivity(username, UserActivity.GET_GAMES_LIST);
 
         List<Game> games1 = gameRepository.findGamesByPlayer1(username);
         List<GameDTO> gameDTOs = games1.stream()

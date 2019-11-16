@@ -9,6 +9,7 @@ public enum UserActivity {
     INVITE_TO_GAME,
     PUT_CARD,
     END_TURN,
+    GET_PROFILE_INFO,
     GET_PLAYERS_LIST,
     GET_FRIENDS_LIST,
     GET_FRIEND_REQUEST_LIST,

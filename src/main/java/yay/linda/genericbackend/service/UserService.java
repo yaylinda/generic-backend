@@ -50,10 +50,6 @@ public class UserService {
             throw RegisterException.usernameTaken(registerRequest.getUsername());
         }
 
-//        if (emailExists(registerRequest.getEmail())) {
-//            throw RegisterException.emailTaken(registerRequest.getEmail());
-//        }
-
         createUser(registerRequest);
 
         Session session = sessionService.createSession(registerRequest.getUsername());
