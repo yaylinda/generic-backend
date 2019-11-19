@@ -71,6 +71,31 @@ public class PlayerService {
         return otherPlayers;
     }
 
+    public List<PlayerDTO> searchPlayersByUsername(String sessionToken, String query) {
+        String username = sessionService.getUsernameFromSessionToken(sessionToken);
+        LOGGER.info("Obtained username={} from sessionToken", username);
+        userService.updateActivity(username, UserActivity.SEARCH_FOR_FRIENDS);
+
+        List<User> matching = userRepository.findByUsernameLike(query);
+        LOGGER.info("Found {} players with username like '{}'", matching.size(), query);
+
+        HashSet<String> friends = getFriends(sessionToken).stream()
+                .map(PlayerDTO::getUsername)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        return matching.stream()
+                .filter(p -> !p.getUsername().equals(username))
+                .filter(p -> !friends.contains(p.getUsername()))
+                .map(p -> {
+                    List<FriendRequest> requests0 = friendRequestRepository
+                            .findAllByRequesterAndRequesteeAndStatus(username, p.getUsername(), FriendRequestStatus.REQUESTED.name());
+                    List<FriendRequest> requests1 = friendRequestRepository
+                            .findAllByRequesterAndRequesteeAndStatus(p.getUsername(), username, FriendRequestStatus.REQUESTED.name());
+                    return PlayerDTO.fromUser(p, requests0.isEmpty() && requests1.isEmpty());
+                })
+                .collect(Collectors.toList());
+    }
+
     public PlayerDTO getOnePlayer(String sessionToken) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.FriendRequestDTO;
 import yay.linda.genericbackend.model.PlayerDTO;
@@ -37,6 +38,14 @@ public class PlayerController {
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET PLAYERS from sessionToken request: sessionToken={}", sessionToken);
         return ResponseEntity.ok(playerService.getAllPlayers(sessionToken));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PlayerDTO>> searchPlayersByUsername(
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestParam(value = "query") String query) {
+        LOGGER.info("SEARCH PLAYERS sessionToken={}, query={}", sessionToken, query);
+        return ResponseEntity.ok(playerService.searchPlayersByUsername(sessionToken, query));
     }
 
     @GetMapping("/one")
