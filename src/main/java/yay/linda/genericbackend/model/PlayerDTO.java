@@ -8,7 +8,7 @@ import java.util.Date;
 import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
 
 @Data
-public class PlayerDTO {
+public class PlayerDTO implements Comparable<PlayerDTO> {
 
     private String username;
     private String lastActiveDate;
@@ -34,5 +34,10 @@ public class PlayerDTO {
         playerDTO.canAdd = canAdd;
         playerDTO.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
         return playerDTO;
+    }
+
+    @Override
+    public int compareTo(PlayerDTO o) {
+        return this.getLastActiveDate().compareTo(o.getLastActiveDate()) * -1;
     }
 }

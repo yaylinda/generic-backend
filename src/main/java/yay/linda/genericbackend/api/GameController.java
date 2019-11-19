@@ -82,11 +82,9 @@ public class GameController {
 
     @PostMapping("/new")
     public ResponseEntity<GameDTO> createGame(
-            @RequestHeader("Session-Token") String sessionToken,
-            @RequestParam(value = "useAdvancedConfigs", required = false, defaultValue = "false") Boolean useAdvancedConfigs,
-            @RequestBody AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-        LOGGER.info("CREATE GAME: sessionToken={}, advancedGameConfigurationDTO={}", sessionToken, advancedGameConfigurationDTO);
-        return ResponseEntity.ok(gameService.createGame(sessionToken, useAdvancedConfigs, advancedGameConfigurationDTO));
+            @RequestHeader("Session-Token") String sessionToken) {
+        LOGGER.info("CREATE GAME: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(gameService.createGame(sessionToken));
     }
 
     @PostMapping("/invite")

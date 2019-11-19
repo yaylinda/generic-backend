@@ -11,6 +11,7 @@ import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.config.GameProperties;
 import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
 import yay.linda.genericbackend.model.Card;
+import yay.linda.genericbackend.model.CardType;
 import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
 import yay.linda.genericbackend.model.Game;
 import yay.linda.genericbackend.model.GameDTO;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -129,7 +131,7 @@ public class GameService {
         List<Game> waitingGames = getWaitingGames(username);
         if (waitingGames.isEmpty()) {
             LOGGER.info("No available games for {} to join... creating...", username);
-            gameDTO = createGame(sessionToken, false, new AdvancedGameConfigurationDTO());
+            gameDTO = createGame(sessionToken);
             response.setCreateOrJoin("CREATE");
         } else {
             LOGGER.info("Found available game {} to join, gameId={}", username, waitingGames.get(0).getId());
@@ -159,11 +161,7 @@ public class GameService {
         return new GameDTO(gameToJoin, false);
     }
 
-    public GameDTO createGame(String sessionToken, Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-
-        if (useAdvancedConfigs) {
-            this.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
-        }
+    public GameDTO createGame(String sessionToken) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -175,10 +173,10 @@ public class GameService {
                 this.gameProperties.getNumCols(),
                 this.gameProperties.getNumCardsInHand(),
                 this.gameProperties.getNumTerritoryRows(),
-                useAdvancedConfigs,
-                advancedGameConfigurationDTO);
+                false,
+                null);
 
-        newGame.createGameForPlayer1(username, useAdvancedConfigs ? advancedGameConfigurationDTO.getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
+        newGame.createGameForPlayer1(username, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
 
         gameRepository.save(newGame);
         LOGGER.info("Created new game for {} with gameId={}", username, newGame.getId());
@@ -189,20 +187,29 @@ public class GameService {
 
 
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
+
+        if (inviteToGameDTO.getUseAdvancedConfigs()) {
+            this.validateAdvancedGameConfigurations(inviteToGameDTO.getAdvancedGameConfiguration());
+        }
+
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.INVITE_TO_GAME);
+        userService.incrementNumGames(username);
+        userService.incrementNumGames(inviteToGameDTO.getPlayer2());
 
         Game newGame = new Game(
                 this.gameProperties.getNumRows(),
                 this.gameProperties.getNumCols(),
                 this.gameProperties.getNumCardsInHand(),
                 this.gameProperties.getNumTerritoryRows(),
-                false,
-                null);
+                inviteToGameDTO.getUseAdvancedConfigs(),
+                inviteToGameDTO.getAdvancedGameConfiguration());
 
-        newGame.createGameForPlayer1(username, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
-        newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2(), AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
+        Map<CardType, Double> cardDropRates = inviteToGameDTO.getUseAdvancedConfigs() ? inviteToGameDTO.getAdvancedGameConfiguration().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES();
+
+        newGame.createGameForPlayer1(username, cardDropRates);
+        newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2(), cardDropRates);
 
         gameRepository.save(newGame);
 

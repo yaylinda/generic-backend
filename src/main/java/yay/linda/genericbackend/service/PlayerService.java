@@ -19,6 +19,7 @@ import yay.linda.genericbackend.repository.UserRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +136,9 @@ public class PlayerService {
                 .collect(Collectors.toList()));
 
         LOGGER.info("Friends of {}: {}", username, friends);
+
+        Collections.sort(friends);
+
         return friends;
     }
 
@@ -155,6 +159,9 @@ public class PlayerService {
                 .collect(Collectors.toList()));
 
         LOGGER.info("FriendRequests for {}: {}", username, friendRequests);
+
+        Collections.sort(friendRequests);
+
         return friendRequests;
     }
 

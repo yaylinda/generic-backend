@@ -1,6 +1,7 @@
 package yay.linda.genericbackend.model;
 
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Date;
@@ -8,7 +9,7 @@ import java.util.Date;
 import static yay.linda.genericbackend.model.Constants.SIMPLE_DATE_FORMAT;
 
 @Data
-public class FriendRequestDTO {
+public class FriendRequestDTO implements Comparable<FriendRequestDTO> {
     private String id;
     private String requester;
     private String requestee;
@@ -31,5 +32,13 @@ public class FriendRequestDTO {
         friendRequestDTO.status = friendRequest.getStatus();
         friendRequestDTO.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
         return friendRequestDTO;
+    }
+
+    @Override
+    public int compareTo(FriendRequestDTO o) {
+        String thisLastModDate = StringUtils.isEmpty(this.responseDate) ? this.requestDate : this.responseDate;
+        String otherLastModDate = StringUtils.isEmpty(o.getResponseDate()) ? o.getRequestDate() : o.getResponseDate();
+
+        return thisLastModDate.compareTo(otherLastModDate) * -1;
     }
 }
