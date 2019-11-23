@@ -40,58 +40,47 @@ public class GameAIPlayer {
     @Autowired
     private GameRepository gameRepository;
 
-    public GameDTO nextMove(String gameId, String realUsername) {
-
-        String aiUsername = "SimpleWarAI_" + randomStringGenerator(6);
-
-        LOGGER.info("{} will play in gameId={}, against real player: {}", aiUsername, gameId, realUsername);
+    public GameDTO nextMove(String gameId, String realUsername, String sessionToken) {
 
         Game game = gameService.getGameById(gameId);
 
+        String aiUsername;
+
         // join game, if game is not in progress
         if (game.getStatus() == GameStatus.WAITING_PLAYER_2) {
-            LOGGER.info("gameId={} is WAITING_PLAYER_2, AI is joining...");
+            aiUsername = "SimpleWarAI_" + randomStringGenerator(6);
+
+            LOGGER.info("gameId={} is WAITING_PLAYER_2, {} is joining...", gameId, aiUsername);
 
             game.addPlayer2ToGame(aiUsername, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES()); // TODO handle advanced configs
 
             gameRepository.save(game);
             LOGGER.info("Updated gameId={} with player2={}", gameId, aiUsername);
+        } else {
+            aiUsername = game.getPlayer2();
         }
 
-        // calculate put card request
-        PutCardRequest putCardRequest = calculatePutCardRequest(game, aiUsername, realUsername);
+        LOGGER.info("{} is player2 (AI) in gameId={}", aiUsername);
 
-        // do put card
+        // do put card while we have energy
         while(canAffordPutCard(game.getEnergyMap().get(aiUsername), game.getCardsMap().get(aiUsername))
                 && canPutInEmptySpace(game, aiUsername)) {
+
+            PutCardRequest putCardRequest = calculatePutCardRequest(game, aiUsername, realUsername);
+            LOGGER.info("Calculated putCardRequest: {}, for {}", putCardRequest, aiUsername);
+
             PutCardResponse putCardResponse = gameService.putCardHelper(game, aiUsername, realUsername, false, putCardRequest);
+            LOGGER.info("{} successfully PUT card", aiUsername);
+
             game = gameService.getGameById(putCardResponse.getGame().getId());
         }
 
-        // do end turn, and return GameDTO
-        return gameService.endTurnHelper(game, aiUsername, realUsername, false, true);
-    }
+        // do end turn
+        gameService.endTurnHelper(game, aiUsername, true);
+        LOGGER.info("{} successfully ended turn", aiUsername);
 
-    private boolean canAffordPutCard(double energyRemaining, List<Card> cards) {
-        for (Card card : cards) {
-            if (card.getCost() <= energyRemaining) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean canPutInEmptySpace(Game game, String username) {
-        for (int row = game.getMinTerritoryRowNum(); row < game.getNumRows(); row++) {
-            for (int col = 0; col < game.getNumCols(); col++) {
-                if (game.getBoardMap().get(username).get(row).get(col).getCards().isEmpty()) { // TODO - handle advanced configs
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        // return gameDTO for real player
+        return gameService.getGameById(sessionToken, gameId);
     }
 
     /**
@@ -105,6 +94,9 @@ public class GameAIPlayer {
 
         double energyRemaining = game.getEnergyMap().get(username);
 
+        LOGGER.info("Calculating PutCardRequest for {} in gameId={}, with energyRemaining={}",
+                username, game.getId(), energyRemaining);
+
         // calculate threat of opponent troop cards per column
         Map<Integer, Double> columnIdToOpponentTroopPointsMap = normalizeMap(
                 accumulateColumnMight(game.getBoardMap().get(username), CardType.TROOP, opponent), false);
@@ -115,8 +107,10 @@ public class GameAIPlayer {
 
         // combine threat scores per columns
         Map<Integer, Double> combined = new HashMap<>();
-        columnIdToOpponentTroopPointsMap.keySet().forEach(k ->
-                combined.put(k, columnIdToOpponentTroopPointsMap.get(k) + columnIdToOpponentWallPointsMap.get(k)));
+        columnIdToOpponentTroopPointsMap.keySet()
+                .forEach(k -> combined.put(k, columnIdToOpponentTroopPointsMap.get(k) + columnIdToOpponentWallPointsMap.get(k)));
+
+        LOGGER.info("Normalized TROOP+WALL opponent column threat map: {}", combined);
 
         // get all valid gameboard coordinates to place cards
         List<GameboardCoordinate> possibleCoordinates = new ArrayList<>();
@@ -135,6 +129,8 @@ public class GameAIPlayer {
             gameboardCoordinate.setPlaceWallThreat(columnIdToOpponentWallPointsMap.get(gameboardCoordinate.getCol()));
             gameboardCoordinate.setCombinedThreat(combined.get(gameboardCoordinate.getCol()));
         }
+
+        LOGGER.info("Possible coordinates and threats: {}", possibleCoordinates);
 
         // pick which cards are able to be placed
         List<Integer> troopIndices = calculateCardIndexToPlace(game.getCardsMap().get(username), CardType.TROOP, energyRemaining);
@@ -200,6 +196,8 @@ public class GameAIPlayer {
         Map<Integer, Integer> indexToMight = new HashMap<>();
         cardIndices.forEach(i -> indexToMight.put(i, cards.get(i).getMight()));
 
+        LOGGER.info("Affordable {} cardIndex:might : {}", cardType, indexToMight);
+
         return new ArrayList<>(indexToMight.entrySet()
                 .stream()
                 .sorted((Map.Entry.<Integer, Integer>comparingByValue().reversed()))
@@ -231,7 +229,7 @@ public class GameAIPlayer {
                 }
             }
 
-            LOGGER.info("Cumulative {} might={} for column={}", cardType, columnSum, columnId);
+            LOGGER.info("Cumulative {} OPPONENT might={} for column={}", cardType, columnSum, columnId);
 
             if (!columnIdToMightMap.containsKey(columnId)) {
                 columnIdToMightMap.put(columnId, 0);
@@ -262,9 +260,35 @@ public class GameAIPlayer {
             normalized.put(k, val);
         });
 
+        LOGGER.info("Normalized column threats (inverseWeight={}): {}", inverseWeight, input);
         return normalized;
     }
 
+    private boolean canAffordPutCard(double energyRemaining, List<Card> cards) {
+        for (Card card : cards) {
+            if (card.getCost() <= energyRemaining) {
+                LOGGER.info("canAffordPutCard: true");
+                return true;
+            }
+        }
+
+        LOGGER.info("canAffordPutCard: true");
+        return false;
+    }
+
+    private boolean canPutInEmptySpace(Game game, String username) {
+        for (int row = game.getMinTerritoryRowNum(); row < game.getNumRows(); row++) {
+            for (int col = 0; col < game.getNumCols(); col++) {
+                if (game.getBoardMap().get(username).get(row).get(col).getCards().isEmpty()) { // TODO - handle advanced configs
+                    LOGGER.info("canPutInEmptySpace: true");
+                    return true;
+                }
+            }
+        }
+
+        LOGGER.info("canPutInEmptySpace: false");
+        return false;
+    }
 
     /**
      *

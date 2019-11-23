@@ -119,7 +119,8 @@ public class GameController {
         GameDTO gameDTO = gameService.endTurn(sessionToken, gameId, discardHand);
 
         if (gameDTO.getIsAi() && gameDTO.getStatus() != GameStatus.COMPLETED) {
-            gameDTO = gameAIPlayer.nextMove(gameId, sessionToken);
+            LOGGER.info("gameId={} isAi... invoking SimpleWar AI...");
+            gameDTO = gameAIPlayer.nextMove(gameId, gameDTO.getUsername(), sessionToken);
         }
 
         return ResponseEntity.ok(gameDTO);

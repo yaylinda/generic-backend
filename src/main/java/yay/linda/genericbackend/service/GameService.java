@@ -289,6 +289,11 @@ public class GameService {
         game.setLastModifiedDate(Date.from(Instant.now()));
         LOGGER.info("Got game: {}", game);
 
+        return endTurnHelper(game, username, discardHand);
+    }
+
+    public GameDTO endTurnHelper(Game game, String username, Boolean discardHand) {
+
         boolean isPlayer1;
         String opponentName;
 
@@ -301,11 +306,6 @@ public class GameService {
             opponentName = game.getPlayer1();
             game.setPlayer1sTurn(true);
         }
-
-        return endTurnHelper(game, username, opponentName, isPlayer1, discardHand);
-    }
-
-    public GameDTO endTurnHelper(Game game, String username, String opponentName, Boolean isPlayer1, Boolean discardHand) {
 
         if (discardHand) {
             IntStream.range(0, game.getNumCardsInHand()).boxed()
