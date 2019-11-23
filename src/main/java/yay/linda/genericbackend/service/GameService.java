@@ -281,7 +281,6 @@ public class GameService {
     }
 
     public GameDTO endTurn(String sessionToken, String gameId, boolean discardHand) {
-
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
         userService.updateActivity(username, UserActivity.END_TURN);
@@ -303,6 +302,11 @@ public class GameService {
             game.setPlayer1sTurn(true);
         }
 
+        return endTurnHelper(game, username, opponentName, isPlayer1, discardHand);
+    }
+
+    public GameDTO endTurnHelper(Game game, String username, String opponentName, Boolean isPlayer1, Boolean discardHand) {
+
         if (discardHand) {
             IntStream.range(0, game.getNumCardsInHand()).boxed()
                     .forEach(i -> drawCard(username, game, i));
@@ -317,7 +321,7 @@ public class GameService {
 
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.updateOpponentBoard(username, opponentName);
-            this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, gameId);
+            this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, game.getId());
         }
 
         if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
