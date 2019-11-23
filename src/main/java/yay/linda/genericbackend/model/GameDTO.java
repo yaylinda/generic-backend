@@ -41,6 +41,7 @@ public class GameDTO implements Comparable<GameDTO> {
     private Boolean useAdvancedConfigs;
     private AdvancedGameConfigurationDTO advancedGameConfigs;
     private String currentTimestamp;
+    private Boolean isAi;
 
     public GameDTO(Game game, boolean isPlayer1) {
         this.id = game.getId();
@@ -69,6 +70,7 @@ public class GameDTO implements Comparable<GameDTO> {
         this.useAdvancedConfigs = game.getUseAdvancedConfigs();
         this.advancedGameConfigs = game.getAdvancedGameConfigs();
         this.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
+        this.isAi = game.getIsAi();
     }
 
     public static GameDTO gameDTOForJoinableList(Game game) {

@@ -42,6 +42,7 @@ public class Game {
     private Map<String, List<Card>> endzoneMap;
     private Boolean useAdvancedConfigs;
     private AdvancedGameConfigurationDTO advancedGameConfigs;
+    private Boolean isAi;
 
     public Game() {
         this.boardMap = new HashMap<>();
@@ -56,7 +57,7 @@ public class Game {
     }
 
     public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows,
-                Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+                Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO, Boolean isAi) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
@@ -72,6 +73,7 @@ public class Game {
         this.endzoneMap = new HashMap<>();
         this.useAdvancedConfigs = useAdvancedConfigs;
         this.advancedGameConfigs = advancedGameConfigurationDTO;
+        this.isAi = isAi;
     }
 
     /**

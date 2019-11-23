@@ -131,7 +131,7 @@ public class GameService {
         List<Game> waitingGames = getWaitingGames(username);
         if (waitingGames.isEmpty()) {
             LOGGER.info("No available games for {} to join... creating...", username);
-            gameDTO = createGame(sessionToken);
+            gameDTO = createGame(sessionToken, false);
             response.setCreateOrJoin("CREATE");
         } else {
             LOGGER.info("Found available game {} to join, gameId={}", username, waitingGames.get(0).getId());
@@ -161,7 +161,7 @@ public class GameService {
         return new GameDTO(gameToJoin, false);
     }
 
-    public GameDTO createGame(String sessionToken) {
+    public GameDTO createGame(String sessionToken, Boolean isAi) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -174,7 +174,8 @@ public class GameService {
                 this.gameProperties.getNumCardsInHand(),
                 this.gameProperties.getNumTerritoryRows(),
                 false,
-                null);
+                null,
+                isAi);
 
         newGame.createGameForPlayer1(username, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
 
@@ -204,7 +205,8 @@ public class GameService {
                 this.gameProperties.getNumCardsInHand(),
                 this.gameProperties.getNumTerritoryRows(),
                 inviteToGameDTO.getUseAdvancedConfigs(),
-                inviteToGameDTO.getAdvancedGameConfiguration());
+                inviteToGameDTO.getAdvancedGameConfiguration(),
+                false);
 
         Map<CardType, Double> cardDropRates = inviteToGameDTO.getUseAdvancedConfigs() ? inviteToGameDTO.getAdvancedGameConfiguration().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES();
 
@@ -239,6 +241,11 @@ public class GameService {
             opponentName = game.getPlayer1();
         }
 
+        return putCardHelper(game, username, opponentName, isPlayer1, putCardRequest);
+    }
+
+    public PutCardResponse putCardHelper(Game game, String username, String opponentName, Boolean isPlayer1, PutCardRequest putCardRequest) {
+
         PutCardStatus putCardStatus;
         String message = validatePutCardRequest(game, username, isPlayer1, putCardRequest);
 
@@ -260,7 +267,7 @@ public class GameService {
             drawCard(username, game, putCardRequest.getCardIndex());
 
             gameRepository.save(game);
-            this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, gameId);
+            this.messagingTemplate.convertAndSend("/topic/opponentPutCard/" + opponentName, game.getId());
         } else {
             LOGGER.info("PutCard request failed with message: '{}'", message);
             putCardStatus = PutCardStatus.INVALID;
@@ -324,11 +331,22 @@ public class GameService {
         return new GameDTO(game, isPlayer1);
     }
 
+    public void validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
+        if (advancedGameConfigurationDTO.getMaxCardsPerCell() < 1) {
+            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell()));
+        }
+
+        double ratesSum = advancedGameConfigurationDTO.getDropRates().values().stream().reduce(0.0, Double::sum);
+        if (ratesSum < 1 || ratesSum > 1) {
+            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getDropRates must add up to 1.0. Current value: %f", ratesSum));
+        }
+    }
+
     /*-------------------------------------------------------------------------
         PRIVATE HELPER METHODS
      -------------------------------------------------------------------------*/
 
-    private Game getGameById(String gameId) {
+    public Game getGameById(String gameId) {
         Optional<Game> optionalGame = gameRepository.findById(gameId);
         if (!optionalGame.isPresent()) {
             throw NotFoundException.gameNotFound(gameId);
@@ -378,17 +396,6 @@ public class GameService {
         }
 
         return "";
-    }
-
-    public void validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-        if (advancedGameConfigurationDTO.getMaxCardsPerCell() < 1) {
-            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell()));
-        }
-
-        double ratesSum = advancedGameConfigurationDTO.getDropRates().values().stream().reduce(0.0, Double::sum);
-        if (ratesSum < 1 || ratesSum > 1) {
-            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getDropRates must add up to 1.0. Current value: %f", ratesSum));
-        }
     }
 
     private void drawCard(String username, Game game, int cardIndex) {
