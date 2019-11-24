@@ -1,5 +1,9 @@
 package yay.linda.genericbackend.api;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import yay.linda.genericbackend.api.error.ErrorDTO;
 import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
 import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
 import yay.linda.genericbackend.model.GameDTO;
@@ -27,6 +32,9 @@ import yay.linda.genericbackend.service.GameService;
 import java.util.List;
 import java.util.Objects;
 
+import static yay.linda.genericbackend.api.error.ErrorMessages.UNEXPECTED_ERROR;
+
+@Api(tags = "Game Controller")
 @RestController
 @RequestMapping("/games")
 @CrossOrigin
@@ -40,6 +48,12 @@ public class GameController {
     @Autowired
     private GameAIPlayer gameAIPlayer;
 
+    @ApiOperation(value = "Health check endpoint")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successful healthcheck"),
+            @ApiResponse(code = 404, message = "Successful healthcheck"),
+            @ApiResponse(code = 500, message = UNEXPECTED_ERROR, response = ErrorDTO.class)
+    })
     @GetMapping("")
     public ResponseEntity<List<GameDTO>> getGames(
             @RequestHeader("Session-Token") String sessionToken) {

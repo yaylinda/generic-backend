@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 
 @Configuration
-public class MongoConfig extends AbstractMongoConfiguration {
+public class MongoConfiguration extends AbstractMongoConfiguration {
 
     @Autowired
     private MongoProperties mongoProperties;
