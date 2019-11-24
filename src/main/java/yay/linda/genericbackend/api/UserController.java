@@ -1,5 +1,6 @@
 package yay.linda.genericbackend.api;
 
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import yay.linda.genericbackend.model.RegisterRequest;
 import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.service.UserService;
 
+@Api(tags = "Users Controller")
 @RestController
 @RequestMapping("/users")
 @CrossOrigin

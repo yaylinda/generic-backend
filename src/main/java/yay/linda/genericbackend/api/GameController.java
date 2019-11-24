@@ -36,7 +36,7 @@ import java.util.Objects;
 import static yay.linda.genericbackend.api.error.ErrorMessages.NOT_FOUND;
 import static yay.linda.genericbackend.api.error.ErrorMessages.UNEXPECTED_ERROR;
 
-@Api(tags = "Game Controller")
+@Api(tags = "Games Controller")
 @RestController
 @RequestMapping("/games")
 @CrossOrigin

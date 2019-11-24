@@ -1,5 +1,6 @@
 package yay.linda.genericbackend.api;
 
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import yay.linda.genericbackend.service.PlayerService;
 
 import java.util.List;
 
+@Api(tags = "Players Controller")
 @RestController
 @RequestMapping("/players")
 @CrossOrigin
