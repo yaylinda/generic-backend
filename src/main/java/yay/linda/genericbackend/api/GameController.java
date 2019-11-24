@@ -25,6 +25,7 @@ import yay.linda.genericbackend.service.GameAIPlayer;
 import yay.linda.genericbackend.service.GameService;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/games")
@@ -118,7 +119,7 @@ public class GameController {
         LOGGER.info("END TURN: sessionToken={}, gameId={}, discard={}", sessionToken, gameId, discardHand);
         GameDTO gameDTO = gameService.endTurn(sessionToken, gameId, discardHand);
 
-        if (gameDTO.getIsAi() && gameDTO.getStatus() != GameStatus.COMPLETED) {
+        if (!Objects.isNull(gameDTO.getIsAi()) && gameDTO.getIsAi() && gameDTO.getStatus() != GameStatus.COMPLETED) {
             LOGGER.info("gameId={} isAi... invoking SimpleWar AI...");
             gameDTO = gameAIPlayer.nextMove(gameId, gameDTO.getUsername(), sessionToken);
         }
