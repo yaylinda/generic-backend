@@ -2,6 +2,7 @@ package yay.linda.genericbackend.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import yay.linda.genericbackend.service.GameService;
 import java.util.List;
 import java.util.Objects;
 
+import static yay.linda.genericbackend.api.error.ErrorMessages.NOT_FOUND;
 import static yay.linda.genericbackend.api.error.ErrorMessages.UNEXPECTED_ERROR;
 
 @Api(tags = "Game Controller")
@@ -48,22 +50,31 @@ public class GameController {
     @Autowired
     private GameAIPlayer gameAIPlayer;
 
-    @ApiOperation(value = "Health check endpoint")
+    @ApiOperation(value = "Retrieve all Simple War games for a player, given a valid Session-Token")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Successful healthcheck"),
-            @ApiResponse(code = 404, message = "Successful healthcheck"),
+            @ApiResponse(code = 200, message = "Successfully retrieved games"),
+            @ApiResponse(code = 404, message = NOT_FOUND, response = ErrorDTO.class),
             @ApiResponse(code = 500, message = UNEXPECTED_ERROR, response = ErrorDTO.class)
     })
     @GetMapping("")
     public ResponseEntity<List<GameDTO>> getGames(
+            @ApiParam(value = "Session-Token", required = true)
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET GAMES: sessionToken={}", sessionToken);
         return ResponseEntity.ok(gameService.getGames(sessionToken));
     }
 
+    @ApiOperation(value = "Retrieve a Simple War game by gameId for a player, given a valid Session-Token")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieved game by id"),
+            @ApiResponse(code = 404, message = NOT_FOUND, response = ErrorDTO.class),
+            @ApiResponse(code = 500, message = UNEXPECTED_ERROR, response = ErrorDTO.class)
+    })
     @GetMapping("/{gameId}")
     public ResponseEntity<GameDTO> getGameById(
+            @ApiParam(value = "Session-Token", required = true)
             @RequestHeader("Session-Token") String sessionToken,
+            @ApiParam(value = "gameId", required = true)
             @PathVariable("gameId") String gameId) {
         LOGGER.info("GET GAME BY ID: sessionToken={}, gameId={}", sessionToken, gameId);
         return ResponseEntity.ok(gameService.getGameById(sessionToken, gameId));
