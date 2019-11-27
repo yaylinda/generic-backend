@@ -19,6 +19,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
+import static yay.linda.genericbackend.util.Utilities.randomStringGenerator;
+
 @Service
 public class UserService {
 
@@ -44,19 +46,24 @@ public class UserService {
                 .build();
     }
 
-    public UserDTO register(RegisterRequest registerRequest) {
+    public UserDTO register(RegisterRequest registerRequest, Boolean isGuest) {
+
+        if (isGuest) {
+            registerRequest.setUsername("SimpleWarGuest_" + randomStringGenerator(6));
+        }
 
         if (usernameExists(registerRequest.getUsername())) {
             throw RegisterException.usernameTaken(registerRequest.getUsername());
         }
 
-        createUser(registerRequest);
+        createUser(registerRequest, isGuest);
 
         Session session = sessionService.createSession(registerRequest.getUsername());
 
         return UserDTO.builder()
                 .username(registerRequest.getUsername())
                 .sessionToken(session.getSessionToken())
+                .isGuest(isGuest)
                 .build();
     }
 
@@ -124,9 +131,9 @@ public class UserService {
         return (user.getPassword().equals(password));
     }
 
-    private void createUser(RegisterRequest registerRequest) {
+    private void createUser(RegisterRequest registerRequest, Boolean isGuest) {
         LOGGER.info("Creating new User: {}", registerRequest);
-        User user = new User(registerRequest);
+        User user = new User(registerRequest, isGuest);
         userRepository.save(user);
     }
 

@@ -23,8 +23,9 @@ public class User {
     private String lastActivity;
     private Integer numWins;
     private Integer numGames;
+    private Boolean isGuest;
 
-    public User(RegisterRequest registerRequest) {
+    public User(RegisterRequest registerRequest, Boolean isGuest) {
         this.username = registerRequest.getUsername();
         this.password = registerRequest.getPassword();
         this.email = registerRequest.getEmail();
@@ -32,5 +33,6 @@ public class User {
         this.lastActiveDate = Date.from(Instant.now());
         this.numWins = 0;
         this.numGames = 0;
+        this.isGuest = isGuest;
     }
 }

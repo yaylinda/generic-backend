@@ -87,6 +87,7 @@ public class PlayerService {
         return matching.stream()
                 .filter(p -> !p.getUsername().equals(username))
                 .filter(p -> !friends.contains(p.getUsername()))
+                .filter(p -> !p.getIsGuest())
                 .map(p -> {
                     List<FriendRequest> requests0 = friendRequestRepository
                             .findAllByRequesterAndRequesteeAndStatus(username, p.getUsername(), FriendRequestStatus.REQUESTED.name());

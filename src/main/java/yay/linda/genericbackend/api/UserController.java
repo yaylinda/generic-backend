@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.LoginRequest;
 import yay.linda.genericbackend.model.RegisterRequest;
@@ -36,9 +37,11 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
-        LOGGER.info("REGISTER request: {}", registerRequest);
-        return new ResponseEntity<>(userService.register(registerRequest), HttpStatus.CREATED);
+    public ResponseEntity<UserDTO> register(
+            @RequestBody RegisterRequest registerRequest,
+            @RequestParam(value = "isGuest", defaultValue = "false") Boolean isGuest) {
+        LOGGER.info("REGISTER request: {}, isGuest: {}", registerRequest, isGuest);
+        return new ResponseEntity<>(userService.register(registerRequest, isGuest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")

@@ -25,14 +25,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static yay.linda.genericbackend.util.Utilities.randomStringGenerator;
+
 @Service
 public class GameAIPlayer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GameAIPlayer.class);
-
-    private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    private static final Random random = new Random();
 
     @Autowired
     private GameService gameService;
@@ -288,21 +286,5 @@ public class GameAIPlayer {
 
         LOGGER.info("canPutInEmptySpace: false");
         return false;
-    }
-
-    /**
-     *
-     * @param length
-     * @return
-     */
-    private String randomStringGenerator(Integer length) {
-
-        StringBuilder acc = new StringBuilder();
-
-        for (int i = 0; i < length; i ++) {
-            acc.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
-        }
-
-        return acc.toString();
     }
 }
