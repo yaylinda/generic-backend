@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.api.error.ErrorDTO;
-import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
+import yay.linda.genericbackend.model.GameConfiguration;
 import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
 import yay.linda.genericbackend.model.GameDTO;
 import yay.linda.genericbackend.model.GameStatus;
@@ -105,9 +105,9 @@ public class GameController {
     @PostMapping("/new/validate")
     public ResponseEntity<String> validateAdvancedGameConfigs(
             @RequestHeader("Session-Token") String sessionToken,
-            @RequestBody AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-        LOGGER.info("VALIDATE ADV GAME CONFIG: sessionToken={}, advancedGameConfigurationDTO={}", sessionToken, advancedGameConfigurationDTO);
-        gameService.validateAdvancedGameConfigurations(advancedGameConfigurationDTO);
+            @RequestBody GameConfiguration gameConfiguration) {
+        LOGGER.info("VALIDATE ADV GAME CONFIG: sessionToken={}, gameConfiguration={}", sessionToken, gameConfiguration);
+        gameService.validateAdvancedGameConfigurations(gameConfiguration);
         return ResponseEntity.ok("OK");
     }
 

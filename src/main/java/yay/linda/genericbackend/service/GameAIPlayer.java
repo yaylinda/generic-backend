@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
+import yay.linda.genericbackend.model.GameConfiguration;
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CardType;
 import yay.linda.genericbackend.model.Cell;
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static yay.linda.genericbackend.util.Utilities.randomStringGenerator;
@@ -50,7 +49,7 @@ public class GameAIPlayer {
 
             LOGGER.info("gameId={} is WAITING_PLAYER_2, {} is joining...", gameId, aiUsername);
 
-            game.addPlayer2ToGame(aiUsername, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES()); // TODO handle advanced configs
+            game.addPlayer2ToGame(aiUsername);
 
             gameRepository.save(game);
             LOGGER.info("Updated gameId={} with player2={}", gameId, aiUsername);
@@ -113,8 +112,8 @@ public class GameAIPlayer {
         // get all valid gameboard coordinates to place cards
         List<GameboardCoordinate> possibleCoordinates = new ArrayList<>();
 
-        for (int row = game.getMinTerritoryRowNum(); row < game.getNumRows(); row++) {
-            for (int col = 0; col < game.getNumCols(); col++) {
+        for (int row = game.getGameConfig().getMinTerritoryRow(); row < game.getGameConfig().getNumRows(); row++) {
+            for (int col = 0; col < game.getGameConfig().getNumCols(); col++) {
                 if (game.getBoardMap().get(username).get(row).get(col).getCards().isEmpty()) { // TODO - handle advanced configs
                     possibleCoordinates.add(new GameboardCoordinate(row, col, 0.0, 0.0, 0.0));
                 }
@@ -275,9 +274,9 @@ public class GameAIPlayer {
     }
 
     private boolean canPutInEmptySpace(Game game, String username) {
-        for (int row = game.getMinTerritoryRowNum(); row < game.getNumRows(); row++) {
-            for (int col = 0; col < game.getNumCols(); col++) {
-                if (game.getBoardMap().get(username).get(row).get(col).getCards().isEmpty()) { // TODO - handle advanced configs
+        for (int row = game.getGameConfig().getMinTerritoryRow(); row < game.getGameConfig().getNumRows(); row++) {
+            for (int col = 0; col < game.getGameConfig().getNumCols(); col++) {
+                if (game.getBoardMap().get(username).get(row).get(col).getCards().size() < game.getGameConfig().getMaxCardsPerCell()) {
                     LOGGER.info("canPutInEmptySpace: true");
                     return true;
                 }

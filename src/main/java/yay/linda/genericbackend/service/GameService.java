@@ -8,8 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import yay.linda.genericbackend.api.error.AdvGameConfigException;
 import yay.linda.genericbackend.api.error.NotFoundException;
-import yay.linda.genericbackend.config.GameProperties;
-import yay.linda.genericbackend.model.AdvancedGameConfigurationDTO;
+import yay.linda.genericbackend.model.GameConfiguration;
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CardType;
 import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
@@ -24,7 +23,6 @@ import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.repository.GameRepository;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -46,9 +44,6 @@ public class GameService {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private GameProperties gameProperties;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -144,6 +139,13 @@ public class GameService {
         return response;
     }
 
+    /**
+     * Join a game by gameId
+     *
+     * @param sessionToken
+     * @param gameId
+     * @return
+     */
     public GameDTO joinGame(String sessionToken, String gameId) {
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -152,7 +154,7 @@ public class GameService {
 
         Game gameToJoin = getGameById(gameId);
 
-        gameToJoin.addPlayer2ToGame(username, gameToJoin.getUseAdvancedConfigs() ? gameToJoin.getAdvancedGameConfigs().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
+        gameToJoin.addPlayer2ToGame(username);
 
         gameRepository.save(gameToJoin);
         LOGGER.info("Found game with id={} for {} to join", gameId, username);
@@ -161,6 +163,13 @@ public class GameService {
         return new GameDTO(gameToJoin, false);
     }
 
+    /**
+     * Create a new DEFAULT game
+     *
+     * @param sessionToken
+     * @param isAi
+     * @return
+     */
     public GameDTO createGame(String sessionToken, Boolean isAi) {
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
@@ -168,16 +177,9 @@ public class GameService {
         userService.updateActivity(username, UserActivity.CREATE_GAME);
         userService.incrementNumGames(username);
 
-        Game newGame = new Game(
-                this.gameProperties.getNumRows(),
-                this.gameProperties.getNumCols(),
-                this.gameProperties.getNumCardsInHand(),
-                this.gameProperties.getNumTerritoryRows(),
-                false,
-                null,
-                isAi);
+        Game newGame = new Game(GameConfiguration.DEFAULT(), isAi);
 
-        newGame.createGameForPlayer1(username, AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
+        newGame.createGameForPlayer1(username);
 
         gameRepository.save(newGame);
         LOGGER.info("Created new game for {} with gameId={}", username, newGame.getId());
@@ -186,7 +188,13 @@ public class GameService {
         return new GameDTO(newGame, true);
     }
 
-
+    /**
+     * Create a new game and invite a user to it
+     *
+     * @param sessionToken
+     * @param inviteToGameDTO
+     * @return
+     */
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
 
         if (inviteToGameDTO.getUseAdvancedConfigs()) {
@@ -199,19 +207,10 @@ public class GameService {
         userService.incrementNumGames(username);
         userService.incrementNumGames(inviteToGameDTO.getPlayer2());
 
-        Game newGame = new Game(
-                this.gameProperties.getNumRows(),
-                this.gameProperties.getNumCols(),
-                this.gameProperties.getNumCardsInHand(),
-                this.gameProperties.getNumTerritoryRows(),
-                inviteToGameDTO.getUseAdvancedConfigs(),
-                inviteToGameDTO.getAdvancedGameConfiguration(),
-                false);
+        Game newGame = new Game(inviteToGameDTO.getAdvancedGameConfiguration(), false);
 
-        Map<CardType, Double> cardDropRates = inviteToGameDTO.getUseAdvancedConfigs() ? inviteToGameDTO.getAdvancedGameConfiguration().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES();
-
-        newGame.createGameForPlayer1(username, cardDropRates);
-        newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2(), cardDropRates);
+        newGame.createGameForPlayer1(username);
+        newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2());
 
         gameRepository.save(newGame);
 
@@ -260,7 +259,7 @@ public class GameService {
             game.incrementMightPlaced(username, putCardRequest.getCard().getMight());
 
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
-                int opponentRow = (this.gameProperties.getNumRows() - 1) - putCardRequest.getRow();
+                int opponentRow = (game.getGameConfig().getNumRows() - 1) - putCardRequest.getRow();
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
             }
 
@@ -308,7 +307,7 @@ public class GameService {
         }
 
         if (discardHand) {
-            IntStream.range(0, game.getNumCardsInHand()).boxed()
+            IntStream.range(0, game.getGameConfig().getNumCardsInHand()).boxed()
                     .forEach(i -> drawCard(username, game, i));
         }
 
@@ -324,7 +323,7 @@ public class GameService {
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, game.getId());
         }
 
-        if (game.getPointsMap().get(username) >= gameProperties.getMaxPoints()) {
+        if (game.getPointsMap().get(username) >= game.getGameConfig().getPointsToWin()) {
             game.setStatus(GameStatus.COMPLETED);
             game.setCompletedDate(Date.from(Instant.now()));
             game.setWinner(username);
@@ -335,15 +334,20 @@ public class GameService {
         return new GameDTO(game, isPlayer1);
     }
 
-    public void validateAdvancedGameConfigurations(AdvancedGameConfigurationDTO advancedGameConfigurationDTO) {
-        if (advancedGameConfigurationDTO.getMaxCardsPerCell() < 1) {
-            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", advancedGameConfigurationDTO.getMaxCardsPerCell()));
+    public void validateAdvancedGameConfigurations(GameConfiguration gameConfiguration) {
+
+        LOGGER.info("Validating Advanced Game Configurations Input");
+
+        if (gameConfiguration.getMaxCardsPerCell() < 1) {
+            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", gameConfiguration.getMaxCardsPerCell()));
         }
 
-        double ratesSum = advancedGameConfigurationDTO.getDropRates().values().stream().reduce(0.0, Double::sum);
+        double ratesSum = gameConfiguration.getDropRates().values().stream().reduce(0.0, Double::sum);
         if (ratesSum < 1 || ratesSum > 1) {
             throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getDropRates must add up to 1.0. Current value: %f", ratesSum));
         }
+
+        // TODO - validate other game configs
     }
 
     /*-------------------------------------------------------------------------
@@ -385,29 +389,19 @@ public class GameService {
             return "Card must be placed in a friendly or empty Cell";
         }
         // check row is within limit
-        if (request.getRow() < currentGame.getMinTerritoryRowNum()) {
+        if (request.getRow() < currentGame.getGameConfig().getMinTerritoryRow()) {
             return "Card must be placed on your Territory";
         }
         //check not too many cards are in cell
-        if (currentGame.getUseAdvancedConfigs() != null && currentGame.getUseAdvancedConfigs()) {
-            if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getAdvancedGameConfigs().getMaxCardsPerCell()) {
-                return String.format("This cell is at maximum capacity ([%d] cards). Check Advanced Game Configurations.", currentGame.getAdvancedGameConfigs().getMaxCardsPerCell());
-            }
-        } else {
-            if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL) {
-                return String.format("This cell is at maximum capacity ([%d] cards).", AdvancedGameConfigurationDTO.DEFAULT_MAX_CARDS_PER_CELL);
-            }
+        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getGameConfig().getMaxCardsPerCell()) {
+            return String.format("This cell is at maximum capacity ([%d] cards).", currentGame.getGameConfig().getMaxCardsPerCell());
         }
 
         return "";
     }
 
     private void drawCard(String username, Game game, int cardIndex) {
-        if (game.getUseAdvancedConfigs() == null) {
-            game.setUseAdvancedConfigs(false);
-        }
-
-        Card newCard = Card.generateCard(username, game.getUseAdvancedConfigs() ? game.getAdvancedGameConfigs().getDropRates() : AdvancedGameConfigurationDTO.DEFAULT_DROP_RATES());
+        Card newCard = Card.generateCard(username, game.getGameConfig().getDropRates());
         LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
         game.getCardsMap().get(username).set(cardIndex, newCard);
     }

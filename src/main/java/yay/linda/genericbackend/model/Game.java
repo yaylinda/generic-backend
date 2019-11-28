@@ -33,18 +33,13 @@ public class Game {
     private Date player2JoinTime;
     private Date completedDate;
     private GameStatus status;
-    private Integer numRows;
-    private Integer numCols;
-    private Integer numCardsInHand;
-    private Integer minTerritoryRowNum;
     private String winner;
     private Map<String, GameStats> gameStatsMap;
     private Map<String, List<Card>> endzoneMap;
-    private Boolean useAdvancedConfigs;
-    private AdvancedGameConfigurationDTO advancedGameConfigs;
+    private GameConfiguration gameConfig;
     private Boolean isAi;
 
-    public Game() {
+    public Game(GameConfiguration gameConfiguration, Boolean isAi) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
         this.previousBoardMap = new HashMap<>();
@@ -54,25 +49,7 @@ public class Game {
         this.createdDate = Date.from(Instant.now());
         this.gameStatsMap = new HashMap<>();
         this.endzoneMap = new HashMap<>();
-    }
-
-    public Game(int numRows, int numCols, int numCardsInHand, int numTerritoryRows,
-                Boolean useAdvancedConfigs, AdvancedGameConfigurationDTO advancedGameConfigurationDTO, Boolean isAi) {
-        this.boardMap = new HashMap<>();
-        this.transitionBoardMap = new HashMap<>();
-        this.previousBoardMap = new HashMap<>();
-        this.cardsMap = new HashMap<>();
-        this.pointsMap = new HashMap<>();
-        this.energyMap = new HashMap<>();
-        this.createdDate = Date.from(Instant.now());
-        this.numRows = numRows;
-        this.numCols = numCols;
-        this.numCardsInHand = numCardsInHand;
-        this.minTerritoryRowNum = numRows - numTerritoryRows;
-        this.gameStatsMap = new HashMap<>();
-        this.endzoneMap = new HashMap<>();
-        this.useAdvancedConfigs = useAdvancedConfigs;
-        this.advancedGameConfigs = advancedGameConfigurationDTO;
+        this.gameConfig = gameConfiguration;
         this.isAi = isAi;
     }
 
@@ -80,16 +57,16 @@ public class Game {
      *
      * @param player1
      */
-    public void createGameForPlayer1(String player1, Map<CardType, Double> cardDropRates) {
+    public void createGameForPlayer1(String player1) {
         this.player1 = player1;
         this.player2 = "<TBD>";
         this.player1sTurn = true;
-        this.boardMap.put(player1, initializeBoard(numRows, numCols));
-        this.transitionBoardMap.put(player1, initializeBoard(numRows, numCols));
-        this.previousBoardMap.put(player1, initializeBoard(numRows, numCols));
+        this.boardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
+        this.transitionBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
+        this.previousBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.pointsMap.put(player1, 0);
         this.energyMap.put(player1, 1.0);
-        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, numCardsInHand, cardDropRates)));
+        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
         this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = Date.from(Instant.now());
         this.lastModifiedDate = Date.from(Instant.now());
@@ -101,14 +78,14 @@ public class Game {
      *
      * @param player2
      */
-    public void addPlayer2ToGame(String player2, Map<CardType, Double> cardDropRates) {
+    public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
         this.boardMap.put(player2, transpose(this.boardMap.get(this.player1)));
-        this.transitionBoardMap.put(player2, initializeBoard(numRows, numCols));
-        this.previousBoardMap.put(player2, initializeBoard(numRows, numCols));
+        this.transitionBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
+        this.previousBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.pointsMap.put(player2, 0);
         this.energyMap.put(player2, 2.0);
-        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, numCardsInHand, cardDropRates)));
+        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
         this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = Date.from(Instant.now());
         this.lastModifiedDate = Date.from(Instant.now());
@@ -186,8 +163,8 @@ public class Game {
      */
     public void updateTransitionalBoard(String username) {
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
+        for (int i = 0; i < gameConfig.getNumRows(); i++) {
+            for (int j = 0; j < gameConfig.getNumCols(); j++) {
                 Cell cell = board.get(i).get(j);
                 for (Card card : cell.getCards()) {
                     if (card.isQualifiedToAdvance(username)) {
@@ -209,7 +186,7 @@ public class Game {
 
                             if (card.getMovementDirection() == MovementDirection.RIGHT) {
                                 LOGGER.info("\tmovement dir is RIGHT");
-                                if (j == numCols - 1) {
+                                if (j == gameConfig.getNumCols() - 1) {
                                     LOGGER.info("\tcard is at edge of RIGHT side. going LEFT instead");
                                     newCol = j - card.getMovement();
                                     card.setMovementDirection(MovementDirection.LEFT);
@@ -247,8 +224,8 @@ public class Game {
 
     public void updateCurrentBoard(String username, String opponentName) {
         List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
+        for (int i = 0; i < gameConfig.getNumRows(); i++) {
+            for (int j = 0; j < gameConfig.getNumCols(); j++) {
                 Cell cell = board.get(i).get(j);
                 if (cell.getCards().size() > 1) {
                     int advancementPoints = 0;
