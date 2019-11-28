@@ -39,6 +39,11 @@ public class Game {
     private GameConfiguration gameConfig;
     private Boolean isAi;
 
+    /**
+     *
+     * @param gameConfiguration
+     * @param isAi
+     */
     public Game(GameConfiguration gameConfiguration, Boolean isAi) {
         this.boardMap = new HashMap<>();
         this.transitionBoardMap = new HashMap<>();
@@ -54,7 +59,6 @@ public class Game {
     }
 
     /**
-     *
      * @param player1
      */
     public void createGameForPlayer1(String player1) {
@@ -65,7 +69,7 @@ public class Game {
         this.transitionBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.previousBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.pointsMap.put(player1, 0);
-        this.energyMap.put(player1, 1.0);
+        this.energyMap.put(player1, gameConfig.getStartingEnergy());
         this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
         this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = Date.from(Instant.now());
@@ -75,7 +79,6 @@ public class Game {
     }
 
     /**
-     *
      * @param player2
      */
     public void addPlayer2ToGame(String player2) {
@@ -84,7 +87,7 @@ public class Game {
         this.transitionBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.previousBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
         this.pointsMap.put(player2, 0);
-        this.energyMap.put(player2, 2.0);
+        this.energyMap.put(player2, gameConfig.getStartingEnergy());
         this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
         this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = Date.from(Instant.now());
@@ -94,7 +97,6 @@ public class Game {
     }
 
     /**
-     *
      * @param username
      * @param row
      * @param col
@@ -106,23 +108,35 @@ public class Game {
     }
 
     /**
-     *
      * @param username
      */
     public void incrementEnergyForEndTurn(String username) {
-        this.getEnergyMap().put(username, Math.min(1.0 + this.gameStatsMap.get(username).getNumTurns(), 10));
+        if (gameConfig.getResetEnergyPerTurn()) {
+            this.getEnergyMap().put(username, Math.min(gameConfig.getStartingEnergy() + this.gameStatsMap.get(username).getNumTurns() * gameConfig.getEnergyGrowthRate(), gameConfig.getMaxEnergy()));
+        } else {
+            this.getEnergyMap().put(username, Math.min(this.getEnergyMap().get(username) + gameConfig.getEnergyGrowthRate(), gameConfig.getMaxEnergy()));
+        }
     }
 
+    /**
+     *
+     * @param username
+     * @param cost
+     */
     public void decrementEnergyForPutCard(String username, Double cost) {
         this.getEnergyMap().put(username, this.getEnergyMap().get(username) - cost);
     }
 
+    /**
+     *
+     * @param username
+     * @param used
+     */
     public void incrementEnergyUsed(String username, Double used) {
         this.gameStatsMap.get(username).incrementEnergyUsed(used);
     }
 
     /**
-     *
      * @param username
      */
     public void incrementNumTurns(String username) {
@@ -135,20 +149,33 @@ public class Game {
                         cell.incrementCardsNumTurnsOnBoard(username)));
     }
 
+    /**
+     *
+     * @param username
+     */
     public void incrementNumCardsPlayed(String username) {
         this.gameStatsMap.get(username).incrementNumCardsPlayed();
     }
 
+    /**
+     *
+     * @param username
+     * @param might
+     */
     public void incrementMightPlaced(String username, Integer might) {
         this.gameStatsMap.get(username).incrementMightPlaced(might);
     }
 
+    /**
+     *
+     * @param username
+     * @param advancementPoints
+     */
     public void incrementAdvancementPoints(String username, Integer advancementPoints) {
         this.gameStatsMap.get(username).incrementAdvancementPoints(advancementPoints);
     }
 
     /**
-     *
      * @param username
      */
     public void updatePreviousBoard(String username) {
@@ -158,7 +185,6 @@ public class Game {
     }
 
     /**
-     *
      * @param username
      */
     public void updateTransitionalBoard(String username) {
@@ -222,6 +248,42 @@ public class Game {
         this.getTransitionBoardMap().put(username, board);
     }
 
+    /*-------------------------------------------------------------------------
+        PRIVATE HELPER METHODS
+     -------------------------------------------------------------------------*/
+
+    /**
+     * @return
+     */
+    private static List<List<Cell>> initializeBoard(int numRows, int numCols) {
+        List<List<Cell>> board = new ArrayList<>();
+        for (int i = 0; i < numRows; i++) {
+            List<Cell> row = new ArrayList<>();
+            for (int j = 0; j < numCols; j++) {
+                row.add(new Cell());
+            }
+            board.add(row);
+        }
+        return board;
+    }
+
+    /**
+     * @param original
+     * @return
+     */
+    private static List<List<Cell>> transpose(List<List<Cell>> original) {
+        List<List<Cell>> transposed = new ArrayList<>();
+        for (int i = original.size() - 1; i >= 0; i--) {
+            transposed.add(original.get(i));
+        }
+        return transposed;
+    }
+
+    /**
+     *
+     * @param username
+     * @param opponentName
+     */
     public void updateCurrentBoard(String username, String opponentName) {
         List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
         for (int i = 0; i < gameConfig.getNumRows(); i++) {
@@ -239,7 +301,6 @@ public class Game {
     }
 
     /**
-     *
      * @param username
      * @param opponentName
      */
@@ -247,38 +308,5 @@ public class Game {
         this.previousBoardMap.put(opponentName, transpose(this.previousBoardMap.get(username)));
         this.transitionBoardMap.put(opponentName, transpose(this.transitionBoardMap.get(username)));
         this.boardMap.put(opponentName, transpose(this.boardMap.get(username)));
-    }
-
-    /*-------------------------------------------------------------------------
-        PRIVATE HELPER METHODS
-     -------------------------------------------------------------------------*/
-
-    /**
-     *
-     * @return
-     */
-    private static List<List<Cell>> initializeBoard(int numRows, int numCols) {
-        List<List<Cell>> board = new ArrayList<>();
-        for (int i = 0; i < numRows; i++) {
-            List<Cell> row = new ArrayList<>();
-            for (int j = 0; j < numCols; j++) {
-                row.add(new Cell());
-            }
-            board.add(row);
-        }
-        return board;
-    }
-
-    /**
-     *
-     * @param original
-     * @return
-     */
-    private static List<List<Cell>> transpose(List<List<Cell>> original) {
-        List<List<Cell>> transposed = new ArrayList<>();
-        for (int i = original.size() - 1; i >=0; i--) {
-            transposed.add(original.get(i));
-        }
-        return transposed;
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories(basePackages = "yay.linda.genericbackend.repository")
 public class GenericBackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(GenericBackendApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(GenericBackendApplication.class, args);
+    }
 }

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import yay.linda.genericbackend.model.GameConfiguration;
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CardType;
 import yay.linda.genericbackend.model.Cell;
@@ -60,7 +59,7 @@ public class GameAIPlayer {
         LOGGER.info("{} is player2 (AI) in gameId={}", aiUsername);
 
         // do put card while we have energy
-        while(canAffordPutCard(game.getEnergyMap().get(aiUsername), game.getCardsMap().get(aiUsername))
+        while (canAffordPutCard(game.getEnergyMap().get(aiUsername), game.getCardsMap().get(aiUsername))
                 && canPutInEmptySpace(game, aiUsername)) {
 
             PutCardRequest putCardRequest = calculatePutCardRequest(game, aiUsername, realUsername);
@@ -81,7 +80,6 @@ public class GameAIPlayer {
     }
 
     /**
-     *
      * @param game
      * @param username
      * @param opponent
@@ -184,7 +182,7 @@ public class GameAIPlayer {
     private List<Integer> calculateCardIndexToPlace(List<Card> cards, CardType cardType, double energyRemaining) {
         List<Integer> cardIndices = new ArrayList<>();
 
-        for(int i = 0; i < cards.size(); i++) {
+        for (int i = 0; i < cards.size(); i++) {
             if (cards.get(i).getCost() <= energyRemaining && cards.get(i).getType() == cardType) {
                 cardIndices.add(i);
             }
@@ -200,10 +198,9 @@ public class GameAIPlayer {
                 .sorted((Map.Entry.<Integer, Integer>comparingByValue().reversed()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new))
                 .keySet());
-        }
+    }
 
     /**
-     *
      * @param cardOwner
      * @param cardType
      * @return
@@ -239,7 +236,6 @@ public class GameAIPlayer {
     }
 
     /**
-     *
      * @param input
      * @param inverseWeight
      * @return

@@ -77,7 +77,7 @@ public class Card implements Comparable<Card> {
         return card;
     }
 
-    public  static Card createHorizontalTroopCard(String username) {
+    public static Card createHorizontalTroopCard(String username) {
         Card card = new Card();
         card.id = UUID.randomUUID().toString();
         card.might = determineMightStat();
@@ -93,10 +93,24 @@ public class Card implements Comparable<Card> {
 
     public static List<Card> generateCards(String username, Integer num, Map<CardType, Double> cardDropRates) {
         List<Card> cards = new ArrayList<>();
-        for (int i = 0; i < num; i++ ) {
+        for (int i = 0; i < num; i++) {
             cards.add(generateCard(username, cardDropRates));
         }
         return cards;
+    }
+
+    private static int determineMightStat() {
+        Random r = new Random();
+        return r.nextInt(11) + 1;
+    }
+
+    private static double calculateCostStat(int might, int move) {
+        return (might + move) / 2.0;
+    }
+
+    private static MovementDirection randomizeDirection() {
+        Random r = new Random();
+        return r.nextInt(2) == 1 ? MovementDirection.RIGHT : MovementDirection.LEFT;
     }
 
     public void incrementNumTurnsOnBoard(String username) {
@@ -128,19 +142,5 @@ public class Card implements Comparable<Card> {
                 return 0;
             }
         }
-    }
-
-    private static int determineMightStat() {
-        Random r = new Random();
-        return r.nextInt(11) + 1;
-    }
-
-    private static double calculateCostStat(int might, int move) {
-        return (might + move) / 2.0;
-    }
-
-    private static MovementDirection randomizeDirection() {
-        Random r = new Random();
-        return r.nextInt(2) == 1 ? MovementDirection.RIGHT : MovementDirection.LEFT;
     }
 }

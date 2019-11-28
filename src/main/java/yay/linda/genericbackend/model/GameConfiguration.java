@@ -25,6 +25,7 @@ public class GameConfiguration {
     private Integer minTerritoryRow;
     private Double energyGrowthRate;
     private Double startingEnergy;
+    private Boolean resetEnergyPerTurn;
     private Boolean isAdvanced;
 
     public static GameConfiguration DEFAULT() {
@@ -47,6 +48,7 @@ public class GameConfiguration {
                 .energyGrowthRate(1.0)
                 .startingEnergy(1.0)
                 .isAdvanced(false)
+                .resetEnergyPerTurn(true)
                 .build();
     }
 }
