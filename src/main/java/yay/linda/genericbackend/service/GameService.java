@@ -195,9 +195,14 @@ public class GameService {
      */
     public GameDTO inviteToGame(String sessionToken, InviteToGameDTO inviteToGameDTO) {
 
-        if (inviteToGameDTO.getUseAdvancedConfigs()) {
-            this.validateAdvancedGameConfigurations(inviteToGameDTO.getAdvancedGameConfiguration());
+        if (inviteToGameDTO.getIsAdvanced()) {
+            this.validateAdvancedGameConfigurations(inviteToGameDTO.getGameConfiguration());
         }
+
+        // set missing fields of GameConfig
+        inviteToGameDTO.getGameConfiguration().setIsAdvanced(inviteToGameDTO.getIsAdvanced());
+        inviteToGameDTO.getGameConfiguration().setMinTerritoryRow(
+                inviteToGameDTO.getGameConfiguration().getNumRows() - inviteToGameDTO.getGameConfiguration().getNumTerritoryRows());
 
         String username = sessionService.getUsernameFromSessionToken(sessionToken);
         LOGGER.info("Obtained username={} from sessionToken", username);
@@ -205,7 +210,7 @@ public class GameService {
         userService.incrementNumGames(username);
         userService.incrementNumGames(inviteToGameDTO.getPlayer2());
 
-        Game newGame = new Game(inviteToGameDTO.getAdvancedGameConfiguration(), false);
+        Game newGame = new Game(inviteToGameDTO.getIsAdvanced() ? inviteToGameDTO.getGameConfiguration() : GameConfiguration.DEFAULT(), false);
 
         newGame.createGameForPlayer1(username);
         newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2());
@@ -346,6 +351,18 @@ public class GameService {
         }
 
         // TODO - validate other game configs
+
+        /*
+        maxCardsPerCell > 1
+        pointsToWin > 1
+        maxEnergy > 1, and maxEnergy >= startingEnergy
+        numRows > 1
+        numCols > 1
+        numCardsInHand > 1
+        numTerritoryRows > 1 and numTerritoryRows <= numTerritoryRows
+        energyGrowthRate > 0
+        startingEnergy > 0
+        */
     }
 
     /*-------------------------------------------------------------------------
