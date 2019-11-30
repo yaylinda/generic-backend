@@ -27,8 +27,6 @@ public class GameDTO implements Comparable<GameDTO> {
     private Double energy;
     private GameStatus status;
     private Integer opponentPoints;
-    private Integer numRows;
-    private Integer numCols;
     private String md5Hash;
     private String createdDate;
     private String lastModifiedDate;
@@ -38,7 +36,7 @@ public class GameDTO implements Comparable<GameDTO> {
     private GameStats gameStats;
     private List<Card> endzone;
     private List<Card> opponentEndzone;
-    private GameConfiguration advancedGameConfigs;
+    private GameConfiguration gameConfig;
     private String currentTimestamp;
     private Boolean isAi;
 
@@ -55,8 +53,6 @@ public class GameDTO implements Comparable<GameDTO> {
         this.energy = game.getEnergyMap().get(username);
         this.status = game.getStatus();
         this.opponentPoints = !this.opponentName.equals("<TBD>") ? game.getPointsMap().get(this.opponentName) : 0;
-        this.numRows = this.board.size();
-        this.numCols = this.board.get(0).size();
         this.md5Hash = md5Hash(game);
         this.createdDate = SIMPLE_DATE_FORMAT.format(game.getCreatedDate());
         this.lastModifiedDate = SIMPLE_DATE_FORMAT.format(game.getLastModifiedDate());
@@ -66,7 +62,7 @@ public class GameDTO implements Comparable<GameDTO> {
         this.gameStats = game.getGameStatsMap().get(username);
         this.endzone = game.getEndzoneMap().getOrDefault(username, new ArrayList<>());
         this.opponentEndzone = game.getEndzoneMap().getOrDefault(opponentName, new ArrayList<>());
-        this.advancedGameConfigs = game.getGameConfig();
+        this.gameConfig = game.getGameConfig();
         this.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
         this.isAi = game.getIsAi();
     }
@@ -81,7 +77,7 @@ public class GameDTO implements Comparable<GameDTO> {
         gameDTO.setOpponentPoints(0);
         gameDTO.setPoints(0);
         gameDTO.setUsername("<TBD>");
-        gameDTO.setAdvancedGameConfigs(game.getGameConfig());
+        gameDTO.setGameConfig(game.getGameConfig());
         gameDTO.setCurrentTimestamp(SIMPLE_DATE_FORMAT.format(Date.from(Instant.now())));
         return gameDTO;
     }
