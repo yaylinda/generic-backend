@@ -445,6 +445,7 @@ public class GameService {
         }
         // check row is within limit
         if (request.getRow() < currentGame.getGameConfiguration().getMinTerritoryRow()) {
+            return "Card must be placed on your Territory";
         }
         //check not too many cards are in cell
         if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getGameConfiguration().getMaxCardsPerCell()) {
