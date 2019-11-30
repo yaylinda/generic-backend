@@ -110,8 +110,8 @@ public class GameAIPlayer {
         // get all valid gameboard coordinates to place cards
         List<GameboardCoordinate> possibleCoordinates = new ArrayList<>();
 
-        for (int row = game.getGameConfig().getMinTerritoryRow(); row < game.getGameConfig().getNumRows(); row++) {
-            for (int col = 0; col < game.getGameConfig().getNumCols(); col++) {
+        for (int row = game.getGameConfiguration().getMinTerritoryRow(); row < game.getGameConfiguration().getNumRows(); row++) {
+            for (int col = 0; col < game.getGameConfiguration().getNumCols(); col++) {
                 if (game.getBoardMap().get(username).get(row).get(col).getCards().isEmpty()) { // TODO - handle advanced configs
                     possibleCoordinates.add(new GameboardCoordinate(row, col, 0.0, 0.0, 0.0));
                 }
@@ -270,9 +270,9 @@ public class GameAIPlayer {
     }
 
     private boolean canPutInEmptySpace(Game game, String username) {
-        for (int row = game.getGameConfig().getMinTerritoryRow(); row < game.getGameConfig().getNumRows(); row++) {
-            for (int col = 0; col < game.getGameConfig().getNumCols(); col++) {
-                if (game.getBoardMap().get(username).get(row).get(col).getCards().size() < game.getGameConfig().getMaxCardsPerCell()) {
+        for (int row = game.getGameConfiguration().getMinTerritoryRow(); row < game.getGameConfiguration().getNumRows(); row++) {
+            for (int col = 0; col < game.getGameConfiguration().getNumCols(); col++) {
+                if (game.getBoardMap().get(username).get(row).get(col).getCards().size() < game.getGameConfiguration().getMaxCardsPerCell()) {
                     LOGGER.info("canPutInEmptySpace: true");
                     return true;
                 }

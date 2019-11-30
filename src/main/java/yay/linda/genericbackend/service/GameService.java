@@ -262,7 +262,7 @@ public class GameService {
             game.incrementMightPlaced(username, putCardRequest.getCard().getMight());
 
             if (game.getStatus() == GameStatus.IN_PROGRESS) {
-                int opponentRow = (game.getGameConfig().getNumRows() - 1) - putCardRequest.getRow();
+                int opponentRow = (game.getGameConfiguration().getNumRows() - 1) - putCardRequest.getRow();
                 game.putCardOnBoard(opponentName, opponentRow, putCardRequest.getCol(), putCardRequest.getCard());
             }
 
@@ -310,7 +310,7 @@ public class GameService {
         }
 
         if (discardHand) {
-            IntStream.range(0, game.getGameConfig().getNumCardsInHand()).boxed()
+            IntStream.range(0, game.getGameConfiguration().getNumCardsInHand()).boxed()
                     .forEach(i -> drawCard(username, game, i));
         }
 
@@ -326,7 +326,7 @@ public class GameService {
             this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, game.getId());
         }
 
-        if (game.getPointsMap().get(username) >= game.getGameConfig().getPointsToWin()) {
+        if (game.getPointsMap().get(username) >= game.getGameConfiguration().getPointsToWin()) {
             game.setStatus(GameStatus.COMPLETED);
             game.setCompletedDate(Date.from(Instant.now()));
             game.setWinner(username);
@@ -444,19 +444,18 @@ public class GameService {
             return "Card must be placed in a friendly or empty Cell";
         }
         // check row is within limit
-        if (request.getRow() < currentGame.getGameConfig().getMinTerritoryRow()) {
-            return "Card must be placed on your Territory";
+        if (request.getRow() < currentGame.getGameConfiguration().getMinTerritoryRow()) {
         }
         //check not too many cards are in cell
-        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getGameConfig().getMaxCardsPerCell()) {
-            return String.format("This cell is at maximum capacity ([%d] cards).", currentGame.getGameConfig().getMaxCardsPerCell());
+        if (currentGame.getBoardMap().get(username).get(request.getRow()).get(request.getCol()).getCards().size() >= currentGame.getGameConfiguration().getMaxCardsPerCell()) {
+            return String.format("This cell is at maximum capacity ([%d] cards).", currentGame.getGameConfiguration().getMaxCardsPerCell());
         }
 
         return "";
     }
 
     private void drawCard(String username, Game game, int cardIndex) {
-        Card newCard = Card.generateCard(username, game.getGameConfig().getDropRates());
+        Card newCard = Card.generateCard(username, game.getGameConfiguration().getDropRates());
         LOGGER.info("Generated new card at index={}: {}", cardIndex, newCard);
         game.getCardsMap().get(username).set(cardIndex, newCard);
     }

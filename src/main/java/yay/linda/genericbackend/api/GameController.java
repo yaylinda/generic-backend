@@ -103,10 +103,10 @@ public class GameController {
     }
 
     @PostMapping("/new/validate")
-    public ResponseEntity<String> validateAdvancedGameConfigs(
+    public ResponseEntity<String> validateAdvancedgameConfiguration(
             @RequestHeader("Session-Token") String sessionToken,
             @RequestBody GameConfiguration gameConfiguration) {
-        LOGGER.info("VALIDATE ADV GAME CONFIG: sessionToken={}, gameConfig={}", sessionToken, gameConfiguration);
+        LOGGER.info("VALIDATE ADV GAME CONFIG: sessionToken={}, gameConfiguration={}", sessionToken, gameConfiguration);
         gameService.validateAdvancedGameConfigurations(gameConfiguration);
         return ResponseEntity.ok("OK");
     }
@@ -153,7 +153,7 @@ public class GameController {
     }
 
     @GetMapping("/default-configs")
-    public ResponseEntity<GameConfiguration> getDefaultGameConfigs() {
+    public ResponseEntity<GameConfiguration> getDefaultgameConfiguration() {
         LOGGER.info("GET default game configs");
         return ResponseEntity.ok(GameConfiguration.DEFAULT());
     }

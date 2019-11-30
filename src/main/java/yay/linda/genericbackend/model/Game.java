@@ -36,7 +36,7 @@ public class Game {
     private String winner;
     private Map<String, GameStats> gameStatsMap;
     private Map<String, List<Card>> endzoneMap;
-    private GameConfiguration gameConfig;
+    private GameConfiguration gameConfiguration;
     private Boolean isAi;
 
     /**
@@ -54,7 +54,7 @@ public class Game {
         this.createdDate = Date.from(Instant.now());
         this.gameStatsMap = new HashMap<>();
         this.endzoneMap = new HashMap<>();
-        this.gameConfig = gameConfiguration;
+        this.gameConfiguration = gameConfiguration;
         this.isAi = isAi;
     }
 
@@ -65,12 +65,12 @@ public class Game {
         this.player1 = player1;
         this.player2 = "<TBD>";
         this.player1sTurn = true;
-        this.boardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
-        this.transitionBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
-        this.previousBoardMap.put(player1, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
+        this.boardMap.put(player1, initializeBoard(gameConfiguration.getNumRows(), gameConfiguration.getNumCols()));
+        this.transitionBoardMap.put(player1, initializeBoard(gameConfiguration.getNumRows(), gameConfiguration.getNumCols()));
+        this.previousBoardMap.put(player1, initializeBoard(gameConfiguration.getNumRows(), gameConfiguration.getNumCols()));
         this.pointsMap.put(player1, 0);
-        this.energyMap.put(player1, gameConfig.getStartingEnergy());
-        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
+        this.energyMap.put(player1, gameConfiguration.getStartingEnergy());
+        this.cardsMap.put(player1, new ArrayList<>(Card.generateCards(player1, gameConfiguration.getNumCardsInHand(), gameConfiguration.getDropRates())));
         this.gameStatsMap.put(player1, new GameStats());
         this.createdDate = Date.from(Instant.now());
         this.lastModifiedDate = Date.from(Instant.now());
@@ -84,11 +84,11 @@ public class Game {
     public void addPlayer2ToGame(String player2) {
         this.player2 = player2;
         this.boardMap.put(player2, transpose(this.boardMap.get(this.player1)));
-        this.transitionBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
-        this.previousBoardMap.put(player2, initializeBoard(gameConfig.getNumRows(), gameConfig.getNumCols()));
+        this.transitionBoardMap.put(player2, initializeBoard(gameConfiguration.getNumRows(), gameConfiguration.getNumCols()));
+        this.previousBoardMap.put(player2, initializeBoard(gameConfiguration.getNumRows(), gameConfiguration.getNumCols()));
         this.pointsMap.put(player2, 0);
-        this.energyMap.put(player2, gameConfig.getStartingEnergy());
-        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, gameConfig.getNumCardsInHand(), gameConfig.getDropRates())));
+        this.energyMap.put(player2, gameConfiguration.getStartingEnergy());
+        this.cardsMap.put(player2, new ArrayList<>(Card.generateCards(player2, gameConfiguration.getNumCardsInHand(), gameConfiguration.getDropRates())));
         this.gameStatsMap.put(player2, new GameStats());
         this.player2JoinTime = Date.from(Instant.now());
         this.lastModifiedDate = Date.from(Instant.now());
@@ -111,10 +111,10 @@ public class Game {
      * @param username
      */
     public void incrementEnergyForEndTurn(String username) {
-        if (gameConfig.getResetEnergyPerTurn()) {
-            this.getEnergyMap().put(username, Math.min(gameConfig.getStartingEnergy() + this.gameStatsMap.get(username).getNumTurns() * gameConfig.getEnergyGrowthRate(), gameConfig.getMaxEnergy()));
+        if (gameConfiguration.getResetEnergyPerTurn()) {
+            this.getEnergyMap().put(username, Math.min(gameConfiguration.getStartingEnergy() + this.gameStatsMap.get(username).getNumTurns() * gameConfiguration.getEnergyGrowthRate(), gameConfiguration.getMaxEnergy()));
         } else {
-            this.getEnergyMap().put(username, Math.min(this.getEnergyMap().get(username) + gameConfig.getEnergyGrowthRate(), gameConfig.getMaxEnergy()));
+            this.getEnergyMap().put(username, Math.min(this.getEnergyMap().get(username) + gameConfiguration.getEnergyGrowthRate(), gameConfiguration.getMaxEnergy()));
         }
     }
 
@@ -189,8 +189,8 @@ public class Game {
      */
     public void updateTransitionalBoard(String username) {
         List<List<Cell>> board = new ArrayList<>(this.getBoardMap().get(username));
-        for (int i = 0; i < gameConfig.getNumRows(); i++) {
-            for (int j = 0; j < gameConfig.getNumCols(); j++) {
+        for (int i = 0; i < gameConfiguration.getNumRows(); i++) {
+            for (int j = 0; j < gameConfiguration.getNumCols(); j++) {
                 Cell cell = board.get(i).get(j);
                 for (Card card : cell.getCards()) {
                     if (card.isQualifiedToAdvance(username)) {
@@ -212,7 +212,7 @@ public class Game {
 
                             if (card.getMovementDirection() == MovementDirection.RIGHT) {
                                 LOGGER.info("\tmovement dir is RIGHT");
-                                if (j == gameConfig.getNumCols() - 1) {
+                                if (j == gameConfiguration.getNumCols() - 1) {
                                     LOGGER.info("\tcard is at edge of RIGHT side. going LEFT instead");
                                     newCol = j - card.getMovement();
                                     card.setMovementDirection(MovementDirection.LEFT);
@@ -286,8 +286,8 @@ public class Game {
      */
     public void updateCurrentBoard(String username, String opponentName) {
         List<List<Cell>> board = new ArrayList<>(this.getTransitionBoardMap().get(username));
-        for (int i = 0; i < gameConfig.getNumRows(); i++) {
-            for (int j = 0; j < gameConfig.getNumCols(); j++) {
+        for (int i = 0; i < gameConfiguration.getNumRows(); i++) {
+            for (int j = 0; j < gameConfiguration.getNumCols(); j++) {
                 Cell cell = board.get(i).get(j);
                 if (cell.getCards().size() > 1) {
                     int advancementPoints = 0;

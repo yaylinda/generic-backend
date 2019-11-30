@@ -36,7 +36,7 @@ public class GameDTO implements Comparable<GameDTO> {
     private GameStats gameStats;
     private List<Card> endzone;
     private List<Card> opponentEndzone;
-    private GameConfiguration gameConfig;
+    private GameConfiguration gameConfiguration;
     private String currentTimestamp;
     private Boolean isAi;
 
@@ -62,7 +62,7 @@ public class GameDTO implements Comparable<GameDTO> {
         this.gameStats = game.getGameStatsMap().get(username);
         this.endzone = game.getEndzoneMap().getOrDefault(username, new ArrayList<>());
         this.opponentEndzone = game.getEndzoneMap().getOrDefault(opponentName, new ArrayList<>());
-        this.gameConfig = game.getGameConfig();
+        this.gameConfiguration = game.getGameConfiguration();
         this.currentTimestamp = SIMPLE_DATE_FORMAT.format(Date.from(Instant.now()));
         this.isAi = game.getIsAi();
     }
@@ -77,7 +77,7 @@ public class GameDTO implements Comparable<GameDTO> {
         gameDTO.setOpponentPoints(0);
         gameDTO.setPoints(0);
         gameDTO.setUsername("<TBD>");
-        gameDTO.setGameConfig(game.getGameConfig());
+        gameDTO.setGameConfiguration(game.getGameConfiguration());
         gameDTO.setCurrentTimestamp(SIMPLE_DATE_FORMAT.format(Date.from(Instant.now())));
         return gameDTO;
     }
