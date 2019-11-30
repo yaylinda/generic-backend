@@ -339,30 +339,70 @@ public class GameService {
 
     public void validateAdvancedGameConfigurations(GameConfiguration gameConfiguration) {
 
-        LOGGER.info("Validating Advanced Game Configurations Input");
+        if (gameConfiguration.getIsAdvanced()) {
+            LOGGER.info("Validating Advanced Game Configurations Input...");
 
-        if (gameConfiguration.getMaxCardsPerCell() < 1) {
-            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getMaxCardsPerCell must be 1 or greater. Current value: %d", gameConfiguration.getMaxCardsPerCell()));
+            double ratesSum = gameConfiguration.getDropRates().values().stream().reduce(0.0, Double::sum);
+            if (ratesSum < 1 || ratesSum > 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: dropRates must add up to 1.0. Current value: %f",
+                        ratesSum));
+            }
+
+            if (gameConfiguration.getMaxCardsPerCell() < 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: maxCardsPerCell must be >= 1. Current value: %d",
+                        gameConfiguration.getMaxCardsPerCell()));
+            }
+
+            if (gameConfiguration.getPointsToWin() < 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: pointsToWin must be >= 1. Current value: %d",
+                        gameConfiguration.getPointsToWin()));
+            }
+
+            if (gameConfiguration.getStartingEnergy() < 0) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: startingEnergy must be >= 0. Current value: %f",
+                        gameConfiguration.getStartingEnergy()));
+            }
+
+            if (gameConfiguration.getMaxEnergy() < 1 || gameConfiguration.getStartingEnergy() > gameConfiguration.getMaxEnergy()) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: maxEnergy must be >= startingEnergy. Current value: %f",
+                        gameConfiguration.getMaxEnergy()));
+            }
+
+            if (gameConfiguration.getNumRows() < 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: numRows must be >= 1. Current value: %d",
+                        gameConfiguration.getNumRows()));
+            }
+
+            if (gameConfiguration.getNumCols() < 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: numCols must be >= 1. Current value: %d",
+                        gameConfiguration.getNumCols()));
+            }
+
+            if (gameConfiguration.getNumCardsInHand() < 1) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: numCardsInHand must be >= 1. Current value: %d",
+                        gameConfiguration.getNumCardsInHand()));
+            }
+
+            if (gameConfiguration.getEnergyGrowthRate() < 0) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: energyGrowthRate must be >= 0. Current value: %f",
+                        gameConfiguration.getEnergyGrowthRate()));
+            }
+
+            if (gameConfiguration.getNumTerritoryRows() < 1 || gameConfiguration.getNumTerritoryRows() > gameConfiguration.getNumRows()) {
+                throw new AdvGameConfigException(String.format(
+                        "Error in Advanced Game Configurations :: numTerritoryRows must be >= 1 and <= numRows. Current value: %d",
+                        gameConfiguration.getNumTerritoryRows()));
+            }
         }
-
-        double ratesSum = gameConfiguration.getDropRates().values().stream().reduce(0.0, Double::sum);
-        if (ratesSum < 1 || ratesSum > 1) {
-            throw new AdvGameConfigException(String.format("Error in Advanced Game Configurations :: getDropRates must add up to 1.0. Current value: %f", ratesSum));
-        }
-
-        // TODO - validate other game configs
-
-        /*
-        maxCardsPerCell > 1
-        pointsToWin > 1
-        maxEnergy > 1, and maxEnergy >= startingEnergy
-        numRows > 1
-        numCols > 1
-        numCardsInHand > 1
-        numTerritoryRows > 1 and numTerritoryRows <= numTerritoryRows
-        energyGrowthRate > 0
-        startingEnergy > 0
-        */
     }
 
     /*-------------------------------------------------------------------------
