@@ -3,6 +3,7 @@ package yay.linda.genericbackend.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.api.error.RegisterException;
@@ -128,7 +129,7 @@ public class UserService {
 
     private boolean verifyPassword(String username, String password) {
         User user = userRepository.findByUsername(username).get();
-        return (user.getPassword().equals(password));
+        return BCrypt.checkpw(password, user.getPassword());
     }
 
     private void createUser(RegisterRequest registerRequest, Boolean isGuest) {
