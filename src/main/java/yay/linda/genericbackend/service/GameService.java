@@ -197,6 +197,8 @@ public class GameService {
 
         if (inviteToGameDTO.getIsAdvanced()) {
             this.validateAdvancedGameConfigurations(inviteToGameDTO.getGameConfiguration());
+        } else {
+            inviteToGameDTO.setGameConfiguration(GameConfiguration.DEFAULT());
         }
 
         // set missing fields of GameConfig
@@ -210,7 +212,7 @@ public class GameService {
         userService.incrementNumGames(username);
         userService.incrementNumGames(inviteToGameDTO.getPlayer2());
 
-        Game newGame = new Game(inviteToGameDTO.getIsAdvanced() ? inviteToGameDTO.getGameConfiguration() : GameConfiguration.DEFAULT(), false);
+        Game newGame = new Game(inviteToGameDTO.getGameConfiguration(), false);
 
         newGame.createGameForPlayer1(username);
         newGame.addPlayer2ToGame(inviteToGameDTO.getPlayer2());

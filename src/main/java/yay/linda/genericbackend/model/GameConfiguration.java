@@ -17,12 +17,12 @@ public class GameConfiguration {
     private Map<CardType, Double> dropRates;
     private Integer maxCardsPerCell;
     private Integer pointsToWin;
-    private Double maxEnergy;
     private Integer numRows;
     private Integer numCols;
     private Integer numCardsInHand;
     private Integer numTerritoryRows;
     private Integer minTerritoryRow;
+    private Double maxEnergy;
     private Double energyGrowthRate;
     private Double startingEnergy;
     private Boolean resetEnergyPerTurn;
