@@ -219,7 +219,7 @@ public class GameService {
 
         gameRepository.save(newGame);
 
-        this.messagingTemplate.convertAndSend("/topic/gameCreated", username);
+        this.messagingTemplate.convertAndSend("/topic/invitedToGame/" + inviteToGameDTO.getPlayer2(), username);
 
         return new GameDTO(newGame, true);
     }
