@@ -14,6 +14,7 @@ import yay.linda.genericbackend.model.RequestFriendDTO;
 import yay.linda.genericbackend.model.RespondFriendDTO;
 import yay.linda.genericbackend.model.User;
 import yay.linda.genericbackend.model.UserActivity;
+import yay.linda.genericbackend.model.WebSocketMessage;
 import yay.linda.genericbackend.repository.FriendRequestRepository;
 import yay.linda.genericbackend.repository.UserRepository;
 
@@ -181,7 +182,8 @@ public class PlayerService {
         LOGGER.info("Saving FriendRequest (request): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
-        this.messagingTemplate.convertAndSend("/topic/friendRequestReceived/" + requestFriendDTO.getRequestee(), username);
+        this.messagingTemplate.convertAndSend("/topic/friendRequestReceived/" + requestFriendDTO.getRequestee(),
+                new WebSocketMessage(null, username, null));
     }
 
     public void respondFriend(String sessionToken, RespondFriendDTO respondFriendDTO) {
@@ -202,6 +204,7 @@ public class PlayerService {
         LOGGER.info("Saving FriendRequest (response): {}", friendRequest);
         friendRequestRepository.save(friendRequest);
 
-        this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequester(), username);
+        this.messagingTemplate.convertAndSend("/topic/friendRequestResponse/" + friendRequest.getRequester(),
+                new WebSocketMessage(null, username, friendRequest.getStatus()));
     }
 }

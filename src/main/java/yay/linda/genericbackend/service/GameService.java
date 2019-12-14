@@ -10,6 +10,7 @@ import yay.linda.genericbackend.api.error.AdvGameConfigException;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.model.Card;
 import yay.linda.genericbackend.model.CreateJoinGameResponseDTO;
+import yay.linda.genericbackend.model.WebSocketMessage;
 import yay.linda.genericbackend.model.Game;
 import yay.linda.genericbackend.model.GameConfiguration;
 import yay.linda.genericbackend.model.GameDTO;
@@ -219,7 +220,8 @@ public class GameService {
 
         gameRepository.save(newGame);
 
-        this.messagingTemplate.convertAndSend("/topic/invitedToGame/" + inviteToGameDTO.getPlayer2(), username);
+        this.messagingTemplate.convertAndSend("/topic/invitedToGame/" + inviteToGameDTO.getPlayer2(),
+                new WebSocketMessage(newGame.getId(), username, null));
 
         return new GameDTO(newGame, true);
     }
@@ -325,7 +327,8 @@ public class GameService {
 
         if (game.getStatus() == GameStatus.IN_PROGRESS) {
             game.updateOpponentBoard(username, opponentName);
-            this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName, game.getId());
+            this.messagingTemplate.convertAndSend("/topic/opponentEndedTurn/" + opponentName,
+                    new WebSocketMessage(game.getId(), username, null));
         }
 
         if (game.getPointsMap().get(username) >= game.getGameConfiguration().getPointsToWin()) {
