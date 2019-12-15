@@ -8,4 +8,5 @@ import lombok.Data;
 public class UserDTO {
     private String username;
     private String sessionToken;
+    private Boolean isGuest;
 }

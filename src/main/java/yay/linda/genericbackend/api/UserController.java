@@ -1,5 +1,6 @@
 package yay.linda.genericbackend.api;
 
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +12,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.LoginRequest;
 import yay.linda.genericbackend.model.RegisterRequest;
 import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.service.UserService;
 
+@Api(tags = "Users Controller")
 @RestController
 @RequestMapping("/users")
 @CrossOrigin
@@ -34,9 +37,11 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest registerRequest) {
-        LOGGER.info("REGISTER request: {}", registerRequest);
-        return new ResponseEntity<>(userService.register(registerRequest), HttpStatus.CREATED);
+    public ResponseEntity<UserDTO> register(
+            @RequestBody RegisterRequest registerRequest,
+            @RequestParam(value = "isGuest", defaultValue = "false") Boolean isGuest) {
+        LOGGER.info("REGISTER request: {}, isGuest: {}", registerRequest, isGuest);
+        return new ResponseEntity<>(userService.register(registerRequest, isGuest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
@@ -45,7 +50,7 @@ public class UserController {
         return ResponseEntity.ok(userService.login(loginRequest));
     }
 
-    @PostMapping("/logout/{sessionToken}")
+    @GetMapping("/logout/{sessionToken}")
     public ResponseEntity<?> logout(@PathVariable("sessionToken") String sessionToken) {
         LOGGER.info("LOGOUT request: sessionToken={}", sessionToken);
         userService.logout(sessionToken);

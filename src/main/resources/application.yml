@@ -14,14 +14,6 @@ info:
     description:
     version: 1.0.0
 
-application:
-  game:
-    numRows: 5
-    numCols: 4
-    numCardsInHand: 4
-    maxPoints: 10
-    numTerritoryRows: 2
-
 ---
 
 spring:

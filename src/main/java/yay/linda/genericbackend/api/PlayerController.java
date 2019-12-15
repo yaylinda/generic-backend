@@ -1,5 +1,6 @@
 package yay.linda.genericbackend.api;
 
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import yay.linda.genericbackend.model.FriendRequestDTO;
 import yay.linda.genericbackend.model.PlayerDTO;
@@ -21,6 +23,7 @@ import yay.linda.genericbackend.service.PlayerService;
 
 import java.util.List;
 
+@Api(tags = "Players Controller")
 @RestController
 @RequestMapping("/players")
 @CrossOrigin
@@ -31,11 +34,26 @@ public class PlayerController {
     @Autowired
     private PlayerService playerService;
 
-    @GetMapping("")
+    @GetMapping("/all")
     public ResponseEntity<List<PlayerDTO>> getAllPlayers(
             @RequestHeader("Session-Token") String sessionToken) {
         LOGGER.info("GET PLAYERS from sessionToken request: sessionToken={}", sessionToken);
         return ResponseEntity.ok(playerService.getAllPlayers(sessionToken));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PlayerDTO>> searchPlayersByUsername(
+            @RequestHeader("Session-Token") String sessionToken,
+            @RequestParam(value = "query") String query) {
+        LOGGER.info("SEARCH PLAYERS sessionToken={}, query={}", sessionToken, query);
+        return ResponseEntity.ok(playerService.searchPlayersByUsername(sessionToken, query));
+    }
+
+    @GetMapping("/one")
+    public ResponseEntity<PlayerDTO> getOnePlayer(
+            @RequestHeader("Session-Token") String sessionToken) {
+        LOGGER.info("GET PLAYER from sessionToken request: sessionToken={}", sessionToken);
+        return ResponseEntity.ok(playerService.getOnePlayer(sessionToken));
     }
 
     @GetMapping("/friends")

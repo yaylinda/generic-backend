@@ -33,6 +33,13 @@ public class DefaultExceptionHandler {
         return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AdvGameConfigException.class)
+    public ResponseEntity<ErrorDTO> processAdvGameConfigException(Exception ex) {
+        ErrorDTO errorDTO = new ErrorDTO(ex.getMessage());
+        LOGGER.error(ex.getMessage(), ex);
+        return new ResponseEntity<>(errorDTO, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTO> processRuntimeException(Exception ex) {
         ErrorDTO errorDTO = new ErrorDTO(ex.getMessage());

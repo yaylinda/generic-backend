@@ -3,6 +3,7 @@ package yay.linda.genericbackend.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import yay.linda.genericbackend.api.error.NotFoundException;
 import yay.linda.genericbackend.api.error.RegisterException;
@@ -15,8 +16,11 @@ import yay.linda.genericbackend.model.UserActivity;
 import yay.linda.genericbackend.model.UserDTO;
 import yay.linda.genericbackend.repository.UserRepository;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
+
+import static yay.linda.genericbackend.util.Utilities.randomStringGenerator;
 
 @Service
 public class UserService {
@@ -43,23 +47,24 @@ public class UserService {
                 .build();
     }
 
-    public UserDTO register(RegisterRequest registerRequest) {
+    public UserDTO register(RegisterRequest registerRequest, Boolean isGuest) {
+
+        if (isGuest) {
+            registerRequest.setUsername("SimpleWarGuest_" + randomStringGenerator(6));
+        }
 
         if (usernameExists(registerRequest.getUsername())) {
             throw RegisterException.usernameTaken(registerRequest.getUsername());
         }
 
-        if (emailExists(registerRequest.getEmail())) {
-            throw RegisterException.emailTaken(registerRequest.getEmail());
-        }
-
-        createUser(registerRequest);
+        createUser(registerRequest, isGuest);
 
         Session session = sessionService.createSession(registerRequest.getUsername());
 
         return UserDTO.builder()
                 .username(registerRequest.getUsername())
                 .sessionToken(session.getSessionToken())
+                .isGuest(isGuest)
                 .build();
     }
 
@@ -88,7 +93,7 @@ public class UserService {
     public void updateActivity(String username, UserActivity userActivity) {
         LOGGER.info("Updating lastActiveDate for {}, lastActivity={}", username, userActivity);
         userRepository.findByUsername(username).ifPresent(u -> {
-            u.setLastActiveDate(new Date());
+            u.setLastActiveDate(Date.from(Instant.now()));
             u.setLastActivity(userActivity.name());
             userRepository.save(u);
         });
@@ -124,12 +129,12 @@ public class UserService {
 
     private boolean verifyPassword(String username, String password) {
         User user = userRepository.findByUsername(username).get();
-        return (user.getPassword().equals(password));
+        return BCrypt.checkpw(password, user.getPassword());
     }
 
-    private void createUser(RegisterRequest registerRequest) {
+    private void createUser(RegisterRequest registerRequest, Boolean isGuest) {
         LOGGER.info("Creating new User: {}", registerRequest);
-        User user = new User(registerRequest);
+        User user = new User(registerRequest, isGuest);
         userRepository.save(user);
     }
 

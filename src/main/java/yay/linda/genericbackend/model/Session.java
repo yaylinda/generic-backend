@@ -3,6 +3,7 @@ package yay.linda.genericbackend.model;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class Session {
     public Session(String username) {
         this.sessionToken = UUID.randomUUID().toString();
         this.username = username;
-        this.createdDate = new Date();
+        this.createdDate = Date.from(Instant.now());
         this.isActive = true;
     }
 }

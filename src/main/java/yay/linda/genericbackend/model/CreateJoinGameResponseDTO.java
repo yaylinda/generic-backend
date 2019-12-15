@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PutCardRequest {
-    private Integer row;
-    private Integer col;
-    private Integer cardIndex;
-    private Card card;
+public class CreateJoinGameResponseDTO {
+    private GameDTO game;
+    private String createOrJoin;
 }
