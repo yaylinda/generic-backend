@@ -6,7 +6,7 @@ spring:
 
 server:
   servlet:
-    context-path: /simple-war-backend
+    context-path: /generic-backend
 
 info:
   app:
