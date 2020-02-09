@@ -4,9 +4,9 @@ spring:
   profiles:
     active: "local"
 
-#  server:
-#    context-path: /simple-war/api
-#    port: 8080
+server:
+  servlet:
+    context-path: /generic-backend
 
 info:
   app:
